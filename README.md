@@ -65,7 +65,7 @@ zygote {
 
     1. Run gradle task `<module>:assembleRelease`
        
-    2. Pick generated zip from `<module>/build/outputs/magsisk`
+    2. Pick generated zip from `<module>/build/outputs/magisk`
    
 
 ## Examples
