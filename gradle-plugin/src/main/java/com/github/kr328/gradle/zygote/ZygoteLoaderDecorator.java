@@ -43,7 +43,7 @@ public final class ZygoteLoaderDecorator {
 
         moduleProp.put("version", variantOutput.getVersionName().getOrElse(""));
         moduleProp.put("versionCode", variantOutput.getVersionCode().getOrElse(0).toString());
-        moduleProp.put("minSdkVersion", String.valueOf(variant.getMaxSdk()));
+        moduleProp.put("minSdkVersion", String.valueOf(variant.getMinSdk()));
         if (variant.getMaxSdk() != null) {
             moduleProp.put("maxSdkVersion", String.valueOf(variant.getMaxSdk()));
         }
