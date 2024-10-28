@@ -42,12 +42,13 @@ task("generateDynamicSources") {
 
         buildConfig.parentFile.mkdirs()
 
+        val rp = project(":runtime")
         buildConfig.writeText(
             """
             package com.github.kr328.gradle.zygote;
             
             public final class BuildConfig {
-                public static final String RUNTIME_DEPENDENCY = "${project.group}:${project(":runtime").name}:${project.version}";
+                public static final String RUNTIME_DEPENDENCY = "${rp.group}.ZygoteLoader:${rp.name}:${rp.version}";
             }
             """.trimIndent()
         )
