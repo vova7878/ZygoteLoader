@@ -13,6 +13,7 @@ android {
 
         consumerProguardFiles("consumer-rules.pro")
 
+        @Suppress("UnstableApiUsage")
         externalNativeBuild {
             cmake {
                 abiFilters("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
@@ -27,6 +28,7 @@ android {
         create("riru") {
             dimension = "loader"
 
+            @Suppress("UnstableApiUsage")
             externalNativeBuild {
                 cmake {
                     arguments("-DLOADER:STRING=riru")
@@ -37,6 +39,7 @@ android {
         create("zygisk") {
             dimension = "loader"
 
+            @Suppress("UnstableApiUsage")
             externalNativeBuild {
                 cmake {
                     arguments("-DLOADER:STRING=zygisk")
@@ -75,12 +78,14 @@ dependencies {
     riruImplementation(libs.riru.runtime)
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create(project.name, MavenPublication::class) {
-                artifactId = "runtime"
+publishing {
+    publications {
+        register<MavenPublication>(project.name) {
+            artifactId = project.name
+            groupId = project.group.toString()
+            version = project.version.toString()
 
+            afterEvaluate {
                 from(components["all"])
             }
         }
