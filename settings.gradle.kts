@@ -20,7 +20,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            val agp = "8.1.2"
+            val agp = "8.7.1"
             val annotation = "1.7.0"
             val riru = "26.0.0"
 

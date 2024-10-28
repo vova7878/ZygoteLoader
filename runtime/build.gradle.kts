@@ -4,9 +4,7 @@ plugins {
 }
 
 android {
-    compileSdk = 34
-
-    ndkVersion = "26.1.10909125"
+    compileSdk = 35
 
     namespace = "com.github.kr328.zloader"
 
