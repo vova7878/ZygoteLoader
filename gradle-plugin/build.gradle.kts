@@ -23,7 +23,7 @@ sourceSets {
 gradlePlugin {
     plugins {
         create("zygote") {
-            id = "com.github.kr328.gradle.zygote"
+            id = "com.github.vova7878.ZygoteLoader"
             implementationClass = "com.github.kr328.gradle.zygote.ZygoteLoaderPlugin"
         }
     }
