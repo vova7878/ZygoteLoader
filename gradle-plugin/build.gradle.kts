@@ -3,8 +3,6 @@ plugins {
     `maven-publish`
 }
 
-val dynamicSources = buildDir.resolve("generated/dynamic")
-
 java {
     withSourcesJar()
 }
@@ -14,18 +12,20 @@ dependencies {
     compileOnly(libs.android.gradle)
 }
 
-sourceSets {
-    named("main") {
-        java.srcDir(dynamicSources)
-    }
-}
-
 gradlePlugin {
     plugins {
         create("zygote") {
             id = "com.github.vova7878.ZygoteLoader"
             implementationClass = "com.github.kr328.gradle.zygote.ZygoteLoaderPlugin"
         }
+    }
+}
+
+val dynamicSources = buildDir.resolve("generated/dynamic")
+
+sourceSets {
+    named("main") {
+        java.srcDir(dynamicSources)
     }
 }
 
@@ -38,7 +38,9 @@ task("generateDynamicSources") {
     tasks["sourcesJar"].dependsOn(this)
 
     doFirst {
-        val buildConfig = dynamicSources.resolve("com/github/kr328/gradle/zygote/BuildConfig.java")
+        val buildConfig = dynamicSources.resolve(
+            "com/github/kr328/gradle/zygote/BuildConfig.java"
+        )
 
         buildConfig.parentFile.mkdirs()
 
@@ -48,7 +50,8 @@ task("generateDynamicSources") {
             package com.github.kr328.gradle.zygote;
             
             public final class BuildConfig {
-                public static final String RUNTIME_DEPENDENCY = "${rp.group}.ZygoteLoader:${rp.name}:${rp.version}";
+                public static final String RUNTIME_DEPENDENCY =
+                 "${rp.group}.ZygoteLoader:${rp.name}:${rp.version}";
             }
             """.trimIndent()
         )

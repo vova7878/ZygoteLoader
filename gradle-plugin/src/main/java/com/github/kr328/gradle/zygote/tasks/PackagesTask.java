@@ -19,11 +19,11 @@ public abstract class PackagesTask extends DefaultTask {
 
     @TaskAction
     public void doAction() throws Exception {
-        for (final File file : getDestinationDirectory().getAsFileTree()) {
+        for (File file : getDestinationDirectory().getAsFileTree()) {
             Files.delete(file.toPath());
         }
 
-        for (final String pkg : getPackages().get()) {
+        for (String pkg : getPackages().get()) {
             Files.createFile(getDestinationDirectory().file(pkg).get().getAsFile().toPath());
         }
     }

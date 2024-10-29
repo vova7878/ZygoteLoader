@@ -36,7 +36,7 @@ public abstract class CustomizeTask extends DefaultTask {
 
         sb.append(CUSTOMIZE_HEADER).append("\n\n");
 
-        final Stream<String> customizes = Stream.concat(
+        Stream<String> customizes = Stream.concat(
                 Stream.of(getChecksumFileName().get()),
                 Files.list(getMergedDirectory().getAsFile().get().toPath().resolve("customize.d"))
                         .map(Path::getFileName)

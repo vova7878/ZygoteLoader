@@ -39,9 +39,9 @@ public abstract class ChecksumTask extends DefaultTask {
 
     private static String checksum(final Path path) {
         try {
-            final MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
 
-            final OutputStream stream = new OutputStream() {
+            OutputStream stream = new OutputStream() {
                 @Override
                 public void write(int i) throws IOException {
                     this.write(new byte[]{(byte) i});
@@ -55,7 +55,7 @@ public abstract class ChecksumTask extends DefaultTask {
 
             Files.copy(path, stream);
 
-            final StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             for (final byte b : sha256.digest()) {
                 sb.append(String.format("%02x", ((int) b) & 0xff));
             }
@@ -73,9 +73,9 @@ public abstract class ChecksumTask extends DefaultTask {
 
     @TaskAction
     public void doAction() throws Exception {
-        final Path root = getRootDirectory().getAsFile().get().toPath();
+        Path root = getRootDirectory().getAsFile().get().toPath();
 
-        final List<Map.Entry<String, String>> checksums = Files.walk(root)
+        List<Map.Entry<String, String>> checksums = Files.walk(root)
                 .filter(Files::isRegularFile)
                 .map(p -> root.relativize(p).toString())
                 .filter(p -> !p.startsWith("META-INF"))
@@ -83,10 +83,10 @@ public abstract class ChecksumTask extends DefaultTask {
                 .sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toList());
 
-        final StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.append(VERIFY_HEADER).append("\n\n");
 
-        for (final Map.Entry<String, String> checksum : checksums) {
+        for (var checksum : checksums) {
             sb.append("do_verify ")
                     .append(checksum.getKey())
                     .append(" ")

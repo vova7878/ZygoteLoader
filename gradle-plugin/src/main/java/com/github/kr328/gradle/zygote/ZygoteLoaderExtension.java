@@ -12,17 +12,11 @@ import javax.annotation.Nullable;
 
 public class ZygoteLoaderExtension {
     private final Properties zygisk = new Properties();
-    private final Properties riru = new Properties();
     private final Set<String> packages = new HashSet<>();
 
     @Nonnull
     public Properties getZygisk() {
         return zygisk;
-    }
-
-    @Nonnull
-    public Properties getRiru() {
-        return riru;
     }
 
     @Nonnull
@@ -34,19 +28,11 @@ public class ZygoteLoaderExtension {
         action.execute(zygisk);
     }
 
-    public void riru(@Nonnull final Action<Properties> action) {
-        action.execute(riru);
-    }
-
-    public void all(@Nonnull final Action<Properties> action) {
-        action.execute(zygisk);
-        action.execute(riru);
-    }
-
     public void packages(@Nonnull final String... pkgs) {
         packages.addAll(List.of(pkgs));
     }
 
+    //TODO
     public static class Properties extends LinkedHashMap<String, String> {
         @Override
         public String put(final String key, final String value) {

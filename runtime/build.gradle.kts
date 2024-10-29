@@ -22,32 +22,6 @@ android {
         }
     }
 
-    productFlavors {
-        setFlavorDimensions(mutableListOf("loader"))
-
-        create("riru") {
-            dimension = "loader"
-
-            @Suppress("UnstableApiUsage")
-            externalNativeBuild {
-                cmake {
-                    arguments("-DLOADER:STRING=riru")
-                }
-            }
-        }
-
-        create("zygisk") {
-            dimension = "loader"
-
-            @Suppress("UnstableApiUsage")
-            externalNativeBuild {
-                cmake {
-                    arguments("-DLOADER:STRING=zygisk")
-                }
-            }
-        }
-    }
-
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
@@ -61,21 +35,14 @@ android {
     }
 
     publishing {
-        multipleVariants("all") {
+        singleVariant("release") {
             withSourcesJar()
-            withJavadocJar()
-            includeBuildTypeValues("debug", "release")
-            includeFlavorDimensionAndValues("loader", "riru", "zygisk")
         }
     }
 }
 
 dependencies {
-    val riruImplementation by configurations
-
     compileOnly(libs.androidx.annotation)
-
-    riruImplementation(libs.riru.runtime)
 }
 
 publishing {
@@ -86,7 +53,7 @@ publishing {
             version = project.version.toString()
 
             afterEvaluate {
-                from(components["all"])
+                from(components["release"])
             }
         }
     }

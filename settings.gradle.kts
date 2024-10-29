@@ -22,11 +22,9 @@ dependencyResolutionManagement {
         create("libs") {
             val agp = "8.7.1"
             val annotation = "1.7.0"
-            val riru = "26.0.0"
 
             library("android-gradle", "com.android.tools.build:gradle:$agp")
             library("androidx-annotation", "androidx.annotation:annotation:$annotation")
-            library("riru-runtime", "dev.rikka.ndk:riru:$riru")
         }
     }
 }
