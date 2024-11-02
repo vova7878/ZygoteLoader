@@ -9,22 +9,30 @@
 class ZygoteLoaderModule : public zygisk::ModuleBase {
 public:
     void onLoad(zygisk::Api *api, JNIEnv *env) override;
+
     void preAppSpecialize(zygisk::AppSpecializeArgs *args) override;
+
     void postAppSpecialize(const zygisk::AppSpecializeArgs *args) override;
+
     void preServerSpecialize(zygisk::ServerSpecializeArgs *args) override;
+
     void postServerSpecialize(const zygisk::ServerSpecializeArgs *args) override;
 
 public:
     void fetchResources();
+
     void reset();
+
     bool shouldEnableForPackage(const char *packageName);
+
     void prepareFork();
+
     void tryLoadDex();
 
 private:
     void initialize();
+
     bool isInitialized();
-    bool isUseBinderInterceptors();
 
 private:
     zygisk::Api *api = nullptr;
@@ -34,5 +42,4 @@ private:
     Resource *classesDex = nullptr;
 
     char *currentProcessName = nullptr;
-    bool useBinderInterceptors = false;
 };

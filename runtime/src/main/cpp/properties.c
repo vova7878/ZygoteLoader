@@ -3,7 +3,8 @@
 #include <string.h>
 #include <malloc.h>
 
-void properties_for_each(const void *properties, uint32_t length, void *ctx, properties_for_each_block block) {
+void properties_for_each(const void *properties, uint32_t length,
+                         void *ctx, properties_for_each_block block) {
     char *ptr = malloc(length + 1);
 
     memcpy(ptr, properties, length);

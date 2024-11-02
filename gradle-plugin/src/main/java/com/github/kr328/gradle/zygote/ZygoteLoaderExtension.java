@@ -105,13 +105,5 @@ public class ZygoteLoaderExtension {
         public void setUpdateJson(@Nullable final String updateJson) {
             put("updateJson", updateJson);
         }
-
-        public boolean isUseBinderInterceptors() {
-            return Boolean.parseBoolean(get("useBinderInterceptors"));
-        }
-
-        public void setUseBinderInterceptors(final boolean enabled) {
-            put("useBinderInterceptors", Boolean.toString(enabled));
-        }
     }
 }

@@ -1,6 +1,5 @@
 #include "dex.h"
 
-#include "binder.h"
 #include "logger.h"
 
 #include <stddef.h>
@@ -16,8 +15,7 @@ void dex_load_and_invoke(
         JNIEnv *env,
         const char *package_name,
         const void *dex_block, uint32_t dex_length,
-        const void *properties_block, uint32_t properties_length,
-        int use_binder_interceptors
+        const void *properties_block, uint32_t properties_length
 ) {
     find_class(c_class_loader, "java/lang/ClassLoader");
     find_static_method(
@@ -65,21 +63,13 @@ void dex_load_and_invoke(
     );
     fatal_assert(c_loader != NULL);
 
-    if (use_binder_interceptors) {
-        LOGD("Enable binder interceptors");
-
-        int interceptor_initialized = binder_interceptors_init(env, c_loader);
-        fatal_assert(interceptor_initialized == 0);
-    }
-
-    find_static_method(m_load, c_loader, "load", "(Ljava/lang/String;Ljava/nio/ByteBuffer;Z)V");
+    find_static_method(m_load, c_loader, "load", "(Ljava/lang/String;Ljava/nio/ByteBuffer;)V");
 
     (*env)->CallStaticVoidMethod(
             env,
             c_loader,
             m_load,
             new_string(package_name),
-            (*env)->NewDirectByteBuffer(env, (void *) properties_block, properties_length),
-            (jboolean) use_binder_interceptors
+            (*env)->NewDirectByteBuffer(env, (void *) properties_block, properties_length)
     );
 }

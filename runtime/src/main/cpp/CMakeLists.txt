@@ -22,7 +22,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LINKER_FLAGS}")
 
-set(MODULE_BASE_SOURCES serializer.c properties.c process.c dex.c main.c mem.cpp binder.c ext/plt.c)
+set(MODULE_BASE_SOURCES serializer.c properties.c process.c dex.c main.c mem.cpp)
 
 add_library(zygisk_loader SHARED main_zygisk.cpp ${MODULE_BASE_SOURCES})
 target_link_libraries(zygisk_loader log)

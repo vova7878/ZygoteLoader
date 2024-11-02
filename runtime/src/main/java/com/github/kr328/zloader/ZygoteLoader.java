@@ -35,9 +35,8 @@ public final class ZygoteLoader {
      * @param enabled     should inject to {@code packageName}
      * @throws IOException if permission denied
      */
-    public static void setPackageEnabled(@NonNull final String packageName, final boolean enabled) throws IOException {
-        if (packageName.isEmpty())
-            return;
+    public static void setPackageEnabled(@NonNull String packageName, boolean enabled) throws IOException {
+        if (packageName.isEmpty()) return;
 
         Files.createDirectories(
                 Paths.get(Loader.getDynamicPackagesPath()),
@@ -63,7 +62,7 @@ public final class ZygoteLoader {
      * @return package enabled
      * @throws IOException if permission denied
      */
-    public static boolean isPackageEnabled(@NonNull final String packageName) throws IOException {
+    public static boolean isPackageEnabled(@NonNull String packageName) throws IOException {
         return Files.readAttributes(
                 Paths.get(Loader.getDynamicPackagesPath(), packageName),
                 BasicFileAttributes.class

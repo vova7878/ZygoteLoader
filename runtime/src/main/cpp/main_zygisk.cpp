@@ -7,7 +7,6 @@
 #include "logger.h"
 #include "dex.h"
 
-#include <stdlib.h>
 #include <jni.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -15,19 +14,16 @@
 #include <pthread.h>
 
 enum FileCommand : int {
-    INITIALIZE, IS_INITIALIZED, IS_USE_BINDER_INTERCEPTORS, GET_RESOURCES, SHOULD_ENABLE_FOR_PACKAGE
+    INITIALIZE, IS_INITIALIZED, GET_RESOURCES, SHOULD_ENABLE_FOR_PACKAGE
 };
 
 struct InitializeData {
     char dataDirectory[PATH_MAX] = {0};
-    bool useBinderInterceptors = false;
 };
 
 static void extractInitializeData(InitializeData *data, const char *key, const char *value) {
     if (strcmp(key, "dataDirectory") == 0) {
         strcpy(data->dataDirectory, value);
-    } else if (strcmp(key, "useBinderInterceptors") == 0) {
-        data->useBinderInterceptors = (strcmp(value, "true") == 0);
     }
 }
 
@@ -70,8 +66,6 @@ static void handleFileRequest(int client) {
                 dataDirectory = open(initializeData.dataDirectory, O_RDONLY | O_DIRECTORY);
                 fatal_assert(dataDirectory >= 0);
 
-                useBinderInterceptors = initializeData.useBinderInterceptors;
-
                 LOGD("Remote initialized: dataDirectory = %s", initializeData.dataDirectory);
             }
 
@@ -87,11 +81,6 @@ static void handleFileRequest(int client) {
             fatal_assert(serializer_write_int(client, moduleDirectory != -1 ? 1 : 0) > 0);
 
             pthread_mutex_unlock(&initializeLock);
-
-            break;
-        }
-        case IS_USE_BINDER_INTERCEPTORS: {
-            fatal_assert(serializer_write_int(client, useBinderInterceptors ? 1 : 0) > 0);
 
             break;
         }
@@ -180,8 +169,6 @@ void ZygoteLoaderModule::fetchResources() {
 }
 
 void ZygoteLoaderModule::reset() {
-    useBinderInterceptors = false;
-
     free(currentProcessName);
 
     currentProcessName = nullptr;
@@ -197,17 +184,13 @@ void ZygoteLoaderModule::reset() {
 void ZygoteLoaderModule::prepareFork() {
     if (shouldEnableForPackage(currentProcessName)) {
         fetchResources();
-
-        useBinderInterceptors = isUseBinderInterceptors();
     } else {
         reset();
     }
 
-    if (!useBinderInterceptors) {
-        LOGD("Request dlclose module");
+    LOGD("Request dlclose module");
 
-        api->setOption(zygisk::DLCLOSE_MODULE_LIBRARY);
-    }
+    api->setOption(zygisk::DLCLOSE_MODULE_LIBRARY);
 }
 
 void ZygoteLoaderModule::tryLoadDex() {
@@ -217,8 +200,7 @@ void ZygoteLoaderModule::tryLoadDex() {
         dex_load_and_invoke(
                 env, currentProcessName,
                 classesDex->base, classesDex->length,
-                moduleProp->base, moduleProp->length,
-                useBinderInterceptors
+                moduleProp->base, moduleProp->length
         );
 
         reset();
@@ -268,20 +250,6 @@ bool ZygoteLoaderModule::isInitialized() {
     close(remote);
 
     return initialized != 0;
-}
-
-bool ZygoteLoaderModule::isUseBinderInterceptors() {
-    int remote = api->connectCompanion();
-    fatal_assert(remote >= 0);
-
-    fatal_assert(serializer_write_int(remote, IS_USE_BINDER_INTERCEPTORS) > 0);
-
-    int enabled = 0;
-    fatal_assert(serializer_read_int(remote, &enabled) > 0);
-
-    close(remote);
-
-    return enabled != 0;
 }
 
 
