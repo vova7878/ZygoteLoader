@@ -2,10 +2,8 @@ package com.github.kr328.zloader.internal;
 
 import android.util.Log;
 
-import androidx.annotation.Keep;
-import androidx.annotation.RestrictTo;
-
 import com.github.kr328.zloader.BuildConfig;
+import com.v7878.r8.annotations.DoNotObfuscateFull;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-@RestrictTo(RestrictTo.Scope.LIBRARY)
 public final class Loader {
     private static final String TAG = "ZygoteLoader[Java]";
 
@@ -23,7 +20,7 @@ public final class Loader {
     private static String packageName;
     private static Map<String, String> properties;
 
-    @Keep
+    @DoNotObfuscateFull
     private static void load(String packageName, ByteBuffer properties) {
         try {
             if (BuildConfig.DEBUG) {

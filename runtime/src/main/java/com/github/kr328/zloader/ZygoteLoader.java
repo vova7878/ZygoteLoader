@@ -1,7 +1,5 @@
 package com.github.kr328.zloader;
 
-import androidx.annotation.NonNull;
-
 import com.github.kr328.zloader.internal.Loader;
 
 import java.io.IOException;
@@ -35,7 +33,7 @@ public final class ZygoteLoader {
      * @param enabled     should inject to {@code packageName}
      * @throws IOException if permission denied
      */
-    public static void setPackageEnabled(@NonNull String packageName, boolean enabled) throws IOException {
+    public static void setPackageEnabled(String packageName, boolean enabled) throws IOException {
         if (packageName.isEmpty()) return;
 
         Files.createDirectories(
@@ -62,7 +60,7 @@ public final class ZygoteLoader {
      * @return package enabled
      * @throws IOException if permission denied
      */
-    public static boolean isPackageEnabled(@NonNull String packageName) throws IOException {
+    public static boolean isPackageEnabled(String packageName) throws IOException {
         return Files.readAttributes(
                 Paths.get(Loader.getDynamicPackagesPath(), packageName),
                 BasicFileAttributes.class
@@ -75,7 +73,6 @@ public final class ZygoteLoader {
      * @return enabled package names
      * @throws IOException if permission denied
      */
-    @NonNull
     public static Set<String> getEnabledPackages() throws IOException {
         try (final Stream<Path> files = Files.list(Paths.get(Loader.getDynamicPackagesPath()))) {
             return files
@@ -103,7 +100,6 @@ public final class ZygoteLoader {
      *
      * @return module data directory
      */
-    @NonNull
     public static String getDataDirectory() {
         return Loader.getDataDirectory();
     }
@@ -113,7 +109,6 @@ public final class ZygoteLoader {
      *
      * @return package name
      */
-    @NonNull
     public static String getPackageName() {
         return Loader.getPackageName();
     }
@@ -123,7 +118,6 @@ public final class ZygoteLoader {
      *
      * @return map of module.prop
      */
-    @NonNull
     public static Map<String, String> getProperties() {
         return Loader.getProperties();
     }

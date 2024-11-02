@@ -33,7 +33,6 @@ static void handleFileRequest(int client) {
     static int classesDex = -1;
     static int moduleDirectory = -1;
     static int dataDirectory = -1;
-    static bool useBinderInterceptors = false;
 
     int command = -1;
     fatal_assert(serializer_read_int(client, &command) > 0);

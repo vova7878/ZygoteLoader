@@ -1,5 +1,5 @@
 plugins {
-    id("com.android.library")
+    alias(libs.plugins.android.library)
     `maven-publish`
 }
 
@@ -42,7 +42,7 @@ android {
 }
 
 dependencies {
-    compileOnly(libs.androidx.annotation)
+    compileOnly(libs.r8.annotations)
 }
 
 publishing {

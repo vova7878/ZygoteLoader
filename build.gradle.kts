@@ -1,5 +1,5 @@
 plugins {
-    id("com.android.library") version "8.7.1" apply false
+    alias(libs.plugins.android.library) apply false
 }
 
 subprojects {
