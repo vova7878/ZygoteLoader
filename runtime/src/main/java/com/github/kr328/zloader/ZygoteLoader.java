@@ -23,7 +23,7 @@ public final class ZygoteLoader {
      * <p>
      * {@link #getPackageName}
      */
-    public static final String PACKAGE_SYSTEM_SERVER = ".android";
+    public static final String PACKAGE_SYSTEM_SERVER = "android";
 
 
     /**
