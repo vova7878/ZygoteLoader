@@ -1,12 +1,13 @@
 [versions]
 agp = "8.7.2"
-r8_annotations = "v0.0.1"
+r8_annotations = "v0.0.2"
 
 [libraries]
-r8_annotations = { module = "com.github.vova7878:R8Annotations", version.ref = "r8_annotations" }
-android_gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+r8-annotations = { module = "com.github.vova7878:R8Annotations", version.ref = "r8_annotations" }
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 
 [plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+java-gradle-plugin = { id = 'java-gradle-plugin' }
+maven-publish = { id = 'maven-publish' }
 

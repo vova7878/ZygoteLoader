@@ -1,6 +1,6 @@
 plugins {
-    `java-gradle-plugin`
-    `maven-publish`
+    alias(libs.plugins.java.gradle.plugin)
+    alias(libs.plugins.maven.publish)
 }
 
 java {
