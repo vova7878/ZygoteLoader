@@ -8,6 +8,7 @@ import com.github.kr328.gradle.zygote.tasks.PackagesTask;
 import com.github.kr328.gradle.zygote.tasks.PropertiesTask;
 import com.github.kr328.gradle.zygote.util.StringUtils;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
@@ -24,6 +25,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 public final class ZygoteLoaderDecorator {
+    private static final String ID_PATTERN = "^[a-zA-Z][a-zA-Z0-9._-]+$";
+
     private final Project project;
     private final ZygoteLoaderExtension extension;
 
@@ -32,24 +35,34 @@ public final class ZygoteLoaderDecorator {
         this.extension = extension;
     }
 
+    private static void putProperty(Map<String, String> props, String name, boolean required, String value) {
+        if (required && value == null) throw new GradleException("module " + name + " not set");
+        if (value != null) props.put(name, value);
+    }
+
     public void decorateVariant(ApplicationVariant variant) {
         TaskProvider<Task> pack = project.getTasks().named("package" + StringUtils.capitalize(variant.getName()));
         VariantOutput variantOutput = variant.getOutputs().stream().findAny().orElseThrow();
 
-        Map<String, String> moduleProp = new LinkedHashMap<>();
+        Map<String, String> moduleProps = new LinkedHashMap<>();
 
-        moduleProp.put("version", variantOutput.getVersionName().getOrElse(""));
-        moduleProp.put("versionCode", variantOutput.getVersionCode().getOrElse(0).toString());
-        moduleProp.put("minSdkVersion", String.valueOf(variant.getMinSdk().getApiLevel()));
+        moduleProps.put("version", variantOutput.getVersionName().getOrElse(""));
+        moduleProps.put("versionCode", variantOutput.getVersionCode().getOrElse(0).toString());
+        moduleProps.put("minSdkVersion", String.valueOf(variant.getMinSdk().getApiLevel()));
         if (variant.getMaxSdk() != null) {
-            moduleProp.put("maxSdkVersion", String.valueOf(variant.getMaxSdk()));
+            moduleProps.put("maxSdkVersion", String.valueOf(variant.getMaxSdk()));
         }
 
-        moduleProp.put("id", extension.getId());
-        moduleProp.put("name", extension.getName());
-        moduleProp.put("author", extension.getAuthor());
-        moduleProp.put("description", extension.getDescription());
-        moduleProp.put("entrypoint", extension.getEntrypoint());
+        putProperty(moduleProps, "id", true, extension.getId());
+        if (!extension.getId().matches(ID_PATTERN)) {
+            throw new GradleException(String.format(
+                    "module id \"%s\" does not match %s", extension.getId(), ID_PATTERN));
+        }
+        putProperty(moduleProps, "name", false, extension.getName());
+        putProperty(moduleProps, "author", false, extension.getAuthor());
+        putProperty(moduleProps, "description", false, extension.getDescription());
+        putProperty(moduleProps, "entrypoint", true, extension.getEntrypoint());
+        putProperty(moduleProps, "updateJson", false, extension.getUpdateJson());
 
         TaskProvider<PropertiesTask> generateModuleProp = project.getTasks().register(
                 "generateModuleProp" + StringUtils.capitalize(variant.getName()),
@@ -59,7 +72,7 @@ public final class ZygoteLoaderDecorator {
                                     .dir("generated/properties/" + variant.getName())
                                     .map(p -> p.file("module.prop"))
                     );
-                    task.getProperties().set(moduleProp);
+                    task.getProperties().set(moduleProps);
                 }
         );
 
