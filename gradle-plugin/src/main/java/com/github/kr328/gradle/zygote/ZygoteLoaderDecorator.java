@@ -45,7 +45,11 @@ public final class ZygoteLoaderDecorator {
             moduleProp.put("maxSdkVersion", String.valueOf(variant.getMaxSdk()));
         }
 
-        moduleProp.putAll(extension.getZygisk());
+        moduleProp.put("id", extension.getId());
+        moduleProp.put("name", extension.getName());
+        moduleProp.put("author", extension.getAuthor());
+        moduleProp.put("description", extension.getDescription());
+        moduleProp.put("entrypoint", extension.getEntrypoint());
 
         TaskProvider<PropertiesTask> generateModuleProp = project.getTasks().register(
                 "generateModuleProp" + StringUtils.capitalize(variant.getName()),
@@ -106,7 +110,7 @@ public final class ZygoteLoaderDecorator {
                     task.from(apk, sp -> {
                         sp.include("lib/*/*.so");
                         sp.eachFile(file -> {
-                            final String abi = file.getPath().split("/")[1];
+                            String abi = file.getPath().split("/")[1];
                             file.setPath("zygisk/" + abi + ".so");
                         });
                     });
@@ -158,8 +162,8 @@ public final class ZygoteLoaderDecorator {
                     );
 
                     zip.getArchiveBaseName().set(project.getName());
-                    if (extension.getZygisk().containsKey("archiveName")) {
-                        zip.getArchiveBaseName().set(extension.getZygisk().get("archiveName"));
+                    if (extension.getArchiveName() != null) {
+                        zip.getArchiveBaseName().set(extension.getArchiveName());
                     }
 
                     zip.setIncludeEmptyDirs(false);

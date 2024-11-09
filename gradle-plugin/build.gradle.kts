@@ -4,6 +4,9 @@ plugins {
 }
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
     withSourcesJar()
 }
 
@@ -21,7 +24,7 @@ gradlePlugin {
     }
 }
 
-val dynamicSources = buildDir.resolve("generated/dynamic")
+val dynamicSources = layout.buildDirectory.dir("generated/dynamic").get()
 
 sourceSets {
     named("main") {
@@ -38,9 +41,9 @@ task("generateDynamicSources") {
     tasks["sourcesJar"].dependsOn(this)
 
     doFirst {
-        val buildConfig = dynamicSources.resolve(
+        val buildConfig = dynamicSources.file(
             "com/github/kr328/gradle/zygote/BuildConfig.java"
-        )
+        ).asFile
 
         buildConfig.parentFile.mkdirs()
 

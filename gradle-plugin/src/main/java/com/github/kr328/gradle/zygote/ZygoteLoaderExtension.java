@@ -1,9 +1,6 @@
 package com.github.kr328.gradle.zygote;
 
-import org.gradle.api.Action;
-
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -11,99 +8,85 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class ZygoteLoaderExtension {
-    private final Properties zygisk = new Properties();
     private final Set<String> packages = new HashSet<>();
-
-    @Nonnull
-    public Properties getZygisk() {
-        return zygisk;
-    }
 
     @Nonnull
     public Set<String> getPackages() {
         return packages;
     }
 
-    public void zygisk(@Nonnull final Action<Properties> action) {
-        action.execute(zygisk);
-    }
-
-    public void packages(@Nonnull final String... pkgs) {
+    public void packages(@Nonnull String... pkgs) {
         packages.addAll(List.of(pkgs));
     }
 
-    //TODO
-    public static class Properties extends LinkedHashMap<String, String> {
-        @Override
-        public String put(final String key, final String value) {
-            if (value == null) {
-                remove(key);
-            }
+    private String id;
+    private String name;
+    private String author;
+    private String description;
+    private String entrypoint;
+    private String archiveName;
+    private String updateJson;
 
-            return super.put(key, value);
-        }
+    @Nullable
+    public String getId() {
+        return id;
+    }
 
-        @Nullable
-        public String getId() {
-            return get("id");
-        }
+    public void setId(@Nullable String id) {
+        this.id = id;
+    }
 
-        public void setId(@Nullable final String id) {
-            put("id", id);
-        }
+    @Nullable
+    public String getName() {
+        return name;
+    }
 
-        @Nullable
-        public String getName() {
-            return get("name");
-        }
+    public void setName(@Nullable String name) {
+        this.name = name;
+    }
 
-        public void setName(@Nullable final String name) {
-            put("name", name);
-        }
+    @Nullable
+    public String getAuthor() {
+        return author;
+    }
 
-        @Nullable
-        public String getAuthor() {
-            return get("author");
-        }
+    public void setAuthor(@Nullable String author) {
+        this.author = author;
+    }
 
-        public void setAuthor(@Nullable final String author) {
-            put("author", author);
-        }
+    @Nullable
+    public String getDescription() {
+        return description;
+    }
 
-        @Nullable
-        public String getDescription() {
-            return get("description");
-        }
+    public void setDescription(@Nullable String description) {
+        this.description = description;
+    }
 
-        public void setDescription(@Nullable final String description) {
-            put("description", description);
-        }
+    @Nullable
+    public String getEntrypoint() {
+        return entrypoint;
+    }
 
-        @Nullable
-        public String getEntrypoint() {
-            return get("entrypoint");
-        }
+    public void setEntrypoint(@Nullable String entrypoint) {
+        this.entrypoint = entrypoint;
+    }
 
-        public void setEntrypoint(@Nullable final String entrypoint) {
-            put("entrypoint", entrypoint);
-        }
+    @Nullable
+    public String getArchiveName() {
+        return archiveName;
+    }
 
-        @Nullable
-        public String getArchiveName() {
-            return get("archiveName");
-        }
+    public void setArchiveName(@Nullable String archiveName) {
+        this.archiveName = archiveName;
+    }
 
-        public void setArchiveName(@Nullable final String archiveName) {
-            put("archiveName", archiveName);
-        }
+    @Nullable
+    public String getUpdateJson() {
+        return updateJson;
+    }
 
-        @Nullable
-        public String getUpdateJson() {
-            return get("updateJson");
-        }
-
-        public void setUpdateJson(@Nullable final String updateJson) {
-            put("updateJson", updateJson);
-        }
+    public void setUpdateJson(@Nullable String updateJson) {
+        this.updateJson = updateJson;
     }
 }

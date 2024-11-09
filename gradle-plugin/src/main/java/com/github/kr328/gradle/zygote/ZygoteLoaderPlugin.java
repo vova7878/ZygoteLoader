@@ -17,7 +17,7 @@ public class ZygoteLoaderPlugin implements Plugin<Project> {
         }
 
         ZygoteLoaderExtension extension = target.getExtensions()
-                .create("zygote", ZygoteLoaderExtension.class);
+                .create("zygisk", ZygoteLoaderExtension.class);
 
         target.getDependencies().add("implementation", BuildConfig.RUNTIME_DEPENDENCY);
 

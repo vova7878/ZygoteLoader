@@ -3,7 +3,7 @@ package com.github.kr328.gradle.zygote.util;
 import javax.annotation.Nonnull;
 
 public final class StringUtils {
-    public static String capitalize(@Nonnull final String in) {
+    public static String capitalize(@Nonnull String in) {
         if (in.isEmpty()) {
             return "";
         }
