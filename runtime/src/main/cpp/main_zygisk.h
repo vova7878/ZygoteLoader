@@ -4,8 +4,6 @@
 
 #include "ext/zygisk.hpp"
 
-#include <string.h>
-
 class ZygoteLoaderModule : public zygisk::ModuleBase {
 public:
     void onLoad(zygisk::Api *api, JNIEnv *env) override;
@@ -31,8 +29,6 @@ public:
 
 private:
     void initialize();
-
-    bool isInitialized();
 
 private:
     zygisk::Api *api = nullptr;

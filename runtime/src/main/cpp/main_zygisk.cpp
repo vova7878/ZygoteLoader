@@ -1,7 +1,6 @@
 #include "main_zygisk.h"
 
 #include "logger.h"
-#include "serializer.h"
 #include "properties.h"
 #include "process.h"
 #include "logger.h"
@@ -11,121 +10,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <malloc.h>
-#include <pthread.h>
-
-enum FileCommand : int {
-    INITIALIZE, IS_INITIALIZED, GET_RESOURCES, SHOULD_ENABLE_FOR_PACKAGE
-};
-
-struct InitializeData {
-    char dataDirectory[PATH_MAX] = {0};
-};
-
-static void extractInitializeData(InitializeData *data, const char *key, const char *value) {
-    if (strcmp(key, "dataDirectory") == 0) {
-        strcpy(data->dataDirectory, value);
-    }
-}
-
-static void handleFileRequest(int client) {
-    static pthread_mutex_t initializeLock = PTHREAD_MUTEX_INITIALIZER;
-    static int moduleProp = -1;
-    static int classesDex = -1;
-    static int moduleDirectory = -1;
-    static int dataDirectory = -1;
-
-    int command = -1;
-    fatal_assert(serializer_read_int(client, &command) > 0);
-
-    switch (static_cast<FileCommand>(command)) {
-        case INITIALIZE: {
-            pthread_mutex_lock(&initializeLock);
-
-            if (moduleDirectory == -1) {
-                LOGD("Remote initializing");
-
-                fatal_assert(serializer_read_file_descriptor(client, &moduleDirectory) > 0);
-
-                moduleProp = openat(moduleDirectory, "module.prop", O_RDONLY);
-                fatal_assert(moduleProp >= 0);
-
-                classesDex = openat(moduleDirectory, "classes.dex", O_RDONLY);
-                fatal_assert(classesDex >= 0);
-
-                InitializeData initializeData;
-                Resource *block = resource_map_fd(moduleProp);
-                properties_for_each(
-                        block->base, block->length,
-                        &initializeData,
-                        reinterpret_cast<properties_for_each_block>(&extractInitializeData)
-                );
-                resource_release(block);
-                fatal_assert(strlen(initializeData.dataDirectory) > 0);
-
-                dataDirectory = open(initializeData.dataDirectory, O_RDONLY | O_DIRECTORY);
-                fatal_assert(dataDirectory >= 0);
-
-                LOGD("Remote initialized: dataDirectory = %s", initializeData.dataDirectory);
-            }
-
-            fatal_assert(serializer_write_int(client, 1) > 0);
-
-            pthread_mutex_unlock(&initializeLock);
-
-            break;
-        }
-        case IS_INITIALIZED: {
-            pthread_mutex_lock(&initializeLock);
-
-            fatal_assert(serializer_write_int(client, moduleDirectory != -1 ? 1 : 0) > 0);
-
-            pthread_mutex_unlock(&initializeLock);
-
-            break;
-        }
-        case GET_RESOURCES: {
-            fatal_assert(serializer_write_file_descriptor(client, moduleProp) > 0);
-            fatal_assert(serializer_write_file_descriptor(client, classesDex) > 0);
-
-            break;
-        }
-        case SHOULD_ENABLE_FOR_PACKAGE: {
-            char *packageName = nullptr;
-            fatal_assert(serializer_read_string(client, &packageName) > 0);
-
-            char path[PATH_MAX] = {0};
-            sprintf(path, "packages/%s", packageName);
-            free(packageName);
-
-            if (faccessat(moduleDirectory, path, F_OK, 0) != 0) {
-                if (faccessat(dataDirectory, path, F_OK, 0) != 0) {
-                    fatal_assert(serializer_write_int(client, 0) > 0);
-
-                    break;
-                }
-            }
-
-            fatal_assert(serializer_write_int(client, 1) > 0);
-
-            break;
-        }
-        default: {
-            LOGD("Unknown command: %d", command);
-
-            break;
-        }
-    }
-}
+#include <string.h> // NOLINT(*-deprecated-headers)
 
 void ZygoteLoaderModule::onLoad(zygisk::Api *_api, JNIEnv *_env) {
     api = _api;
     env = _env;
 
-    if (!isInitialized()) {
-        LOGD("Requesting initialize");
-
-        initialize();
-    }
+    initialize();
 }
 
 void ZygoteLoaderModule::preAppSpecialize(zygisk::AppSpecializeArgs *args) {
@@ -149,27 +40,18 @@ void ZygoteLoaderModule::postServerSpecialize(const zygisk::ServerSpecializeArgs
 }
 
 void ZygoteLoaderModule::fetchResources() {
-    int remote = api->connectCompanion();
-    fatal_assert(remote >= 0);
+    int moduleDirFD = api->getModuleDir();
+    fatal_assert(moduleDirFD >= 0);
 
-    fatal_assert(serializer_write_int(remote, GET_RESOURCES) > 0);
+    int classesDexFD = openat(moduleDirFD, "classes.dex", O_RDONLY);
+    fatal_assert(classesDexFD >= 0);
 
-    int modulePropFd = -1;
-    int classesDexFd = -1;
-    fatal_assert(serializer_read_file_descriptor(remote, &modulePropFd) > 0);
-    fatal_assert(serializer_read_file_descriptor(remote, &classesDexFd) > 0);
-
-    moduleProp = resource_map_fd(modulePropFd);
-    classesDex = resource_map_fd(classesDexFd);
-
-    close(remote);
-    close(modulePropFd);
-    close(classesDexFd);
+    classesDex = resource_map_fd(classesDexFD);
+    close(classesDexFD);
 }
 
 void ZygoteLoaderModule::reset() {
     free(currentProcessName);
-
     currentProcessName = nullptr;
 
     if (moduleProp != nullptr) {
@@ -206,52 +88,50 @@ void ZygoteLoaderModule::tryLoadDex() {
     }
 }
 
+static void extractInitializeData(char *data, const char *key, const char *value) {
+    if (strcmp(key, "dataDirectory") == 0) {
+        strcpy(data, value);
+    }
+}
+
 bool ZygoteLoaderModule::shouldEnableForPackage(const char *packageName) {
-    int remote = api->connectCompanion();
-    fatal_assert(remote >= 0);
+    int moduleDirFD = api->getModuleDir();
+    fatal_assert(moduleDirFD >= 0);
 
-    fatal_assert(serializer_write_int(remote, SHOULD_ENABLE_FOR_PACKAGE) > 0);
-    fatal_assert(serializer_write_string(remote, packageName) > 0);
+    char dataDirectory[PATH_MAX] = {0};
+    properties_for_each(
+            moduleProp->base, moduleProp->length, dataDirectory,
+            reinterpret_cast<properties_for_each_block>(&extractInitializeData)
+    );
+    fatal_assert(strlen(dataDirectory) > 0);
 
-    int r = 0;
-    fatal_assert(serializer_read_int(remote, &r) > 0);
+    int dataDirectoryFD = open(dataDirectory, O_RDONLY | O_DIRECTORY);
+    fatal_assert(dataDirectoryFD >= 0);
 
-    LOGD("Enabled status for %s: %d", packageName, r);
+    char path[PATH_MAX] = {0};
+    sprintf(path, "packages/%s", packageName);
 
-    close(remote);
+    if (faccessat(moduleDirFD, path, F_OK, 0) != 0) {
+        if (faccessat(dataDirectoryFD, path, F_OK, 0) != 0) {
+            return false;
+        }
+    }
 
-    return r != 0;
+    close(dataDirectoryFD);
+
+    return true;
 }
 
 void ZygoteLoaderModule::initialize() {
-    int remote = api->connectCompanion();
+    int moduleDirFD = api->getModuleDir();
+    fatal_assert(moduleDirFD >= 0);
 
-    int moduleDir = api->getModuleDir();
-    fatal_assert(moduleDir >= 0);
+    int modulePropFD = openat(moduleDirFD, "module.prop", O_RDONLY);
+    fatal_assert(modulePropFD >= 0);
 
-    fatal_assert(serializer_write_int(remote, INITIALIZE) > 0);
-    fatal_assert(serializer_write_file_descriptor(remote, moduleDir) > 0);
-
-    int initialized = -1;
-    fatal_assert(serializer_read_int(remote, &initialized) > 0);
-    fatal_assert(initialized == 1);
-}
-
-bool ZygoteLoaderModule::isInitialized() {
-    int remote = api->connectCompanion();
-    fatal_assert(remote >= 0);
-
-    fatal_assert(serializer_write_int(remote, IS_INITIALIZED) > 0);
-
-    int initialized = -1;
-    fatal_assert(serializer_read_int(remote, &initialized) > 0);
-
-    close(remote);
-
-    return initialized != 0;
+    moduleProp = resource_map_fd(modulePropFD);
+    close(modulePropFD);
 }
 
 
 REGISTER_ZYGISK_MODULE(ZygoteLoaderModule)
-
-REGISTER_ZYGISK_COMPANION(handleFileRequest)
