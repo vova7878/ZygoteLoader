@@ -10,7 +10,6 @@ import com.v7878.r8.annotations.DoNotShrinkType;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +22,6 @@ public final class Loader {
     private static String dynamicPackagesPath;
     private static String dataDirectory;
     private static String packageName;
-    private static Map<String, String> properties;
 
     @DoNotObfuscate
     @DoNotShrink
@@ -34,7 +32,7 @@ public final class Loader {
             }
 
             init(packageName, StandardCharsets.UTF_8.decode(properties).toString());
-        } catch (final Throwable throwable) {
+        } catch (Throwable throwable) {
             Log.e(TAG, "doLoad: " + throwable, throwable);
         }
     }
@@ -43,7 +41,7 @@ public final class Loader {
         Map<String, String> properties = new HashMap<>();
 
         for (String line : propertiesText.split("\n")) {
-            final String[] kv = line.split("=", 2);
+            String[] kv = line.split("=", 2);
             if (kv.length != 2)
                 continue;
 
@@ -67,7 +65,6 @@ public final class Loader {
         Loader.dynamicPackagesPath = dataDirectory + "/packages";
         Loader.dataDirectory = dataDirectory;
         Loader.packageName = packageName;
-        Loader.properties = Collections.unmodifiableMap(properties);
 
         try {
             ClassLoader loader = Loader.class.getClassLoader();
@@ -87,10 +84,6 @@ public final class Loader {
 
     public static String getDataDirectory() {
         return dataDirectory;
-    }
-
-    public static Map<String, String> getProperties() {
-        return properties;
     }
 
     public static String getPackageName() {

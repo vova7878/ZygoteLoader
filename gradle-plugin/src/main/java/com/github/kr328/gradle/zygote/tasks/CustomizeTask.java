@@ -29,20 +29,21 @@ public abstract class CustomizeTask extends DefaultTask {
     @TaskAction
     public void doAction() throws Exception {
         StringBuilder sb = new StringBuilder();
-
         sb.append(HEADER).append("\n\n");
 
-        Stream<String> customizes = Stream.concat(
-                Stream.of(getChecksumFileName().get()),
-                Files.list(getMergedDirectory().getAsFile().get().toPath().resolve("customize.d"))
-                        .map(Path::getFileName)
-                        .map(Path::toString)
-        ).sorted();
+        try (var files = Files.list(getMergedDirectory()
+                .dir("customize.d").get().getAsFile().toPath())) {
+            Stream<String> customizes = Stream.concat(
+                    Stream.of(getChecksumFileName().get()),
+                    files.map(Path::getFileName)
+                            .map(Path::toString)
+            ).sorted();
 
-        customizes.forEach(f -> {
-            sb.append(String.format("[ -f \"$MODPATH/customize.d/%1$s\" ] || abort \"! Part '%1$s' not found\"", f)).append('\n');
-            sb.append(String.format(". \"$MODPATH/customize.d/%1$s\"", f)).append('\n');
-        });
+            customizes.forEach(f -> {
+                sb.append(String.format("[ -f \"$MODPATH/customize.d/%1$s\" ] || abort \"! Part '%1$s' not found\"", f)).append('\n');
+                sb.append(String.format(". \"$MODPATH/customize.d/%1$s\"", f)).append('\n');
+            });
+        }
 
         sb.append("\n\n").append(TAIL);
 

@@ -21,17 +21,6 @@ struct Resource *resource_map_fd(int fd) {
     return resource;
 }
 
-struct Resource *resource_map_file(const char *path) {
-    int fd = open(path, O_RDONLY);
-    fatal_assert(fd >= 0);
-
-    struct Resource *resource = resource_map_fd(fd);
-
-    close(fd);
-
-    return resource;
-}
-
 void resource_release(struct Resource *resource) {
     munmap(resource->base, resource->length);
 

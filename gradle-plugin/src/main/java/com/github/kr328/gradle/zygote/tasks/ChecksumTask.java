@@ -66,23 +66,26 @@ public abstract class ChecksumTask extends DefaultTask {
     public void doAction() throws Exception {
         Path root = getRootDirectory().getAsFile().get().toPath();
 
-        var checksums = Files.walk(root)
-                .filter(Files::isRegularFile)
-                .map(p -> root.relativize(p).toString())
-                .filter(p -> !p.startsWith("META-INF"))
-                .map(p -> Map.entry(p.replace('\\', '/'), checksum(root.resolve(p))))
-                .sorted(Map.Entry.comparingByKey())
-                .toList();
-
         StringBuilder sb = new StringBuilder();
         sb.append(HEADER).append("\n\n");
 
-        for (var checksum : checksums) {
-            sb.append("do_verify ")
-                    .append(checksum.getKey())
-                    .append(" ")
-                    .append(checksum.getValue())
-                    .append('\n');
+        try (var files = Files.walk(root)) {
+            var checksums = files
+                    .filter(Files::isRegularFile)
+                    .map(p -> root.relativize(p).toString())
+                    .filter(p -> !p.startsWith("META-INF"))
+                    .map(p -> Map.entry(p.replace('\\', '/'),
+                            checksum(root.resolve(p))))
+                    .sorted(Map.Entry.comparingByKey())
+                    .toList();
+
+            for (var checksum : checksums) {
+                sb.append("do_verify ")
+                        .append(checksum.getKey())
+                        .append(" ")
+                        .append(checksum.getValue())
+                        .append('\n');
+            }
         }
 
         sb.append("\n\n").append(TAIL);

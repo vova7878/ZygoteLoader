@@ -3,16 +3,13 @@ package com.github.kr328.zloader;
 import com.github.kr328.zloader.internal.Loader;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Utilize to manage ZygoteLoader.
@@ -43,7 +40,7 @@ public final class ZygoteLoader {
                 )
         );
 
-        final Path path = Paths.get(Loader.getDynamicPackagesPath(), packageName);
+        Path path = Paths.get(Loader.getDynamicPackagesPath(), packageName);
         if (enabled) {
             Files.createFile(path, PosixFilePermissions.asFileAttribute(
                     PosixFilePermissions.fromString("r--------"))
@@ -74,9 +71,8 @@ public final class ZygoteLoader {
      * @throws IOException if permission denied
      */
     public static Set<String> getEnabledPackages() throws IOException {
-        try (final Stream<Path> files = Files.list(Paths.get(Loader.getDynamicPackagesPath()))) {
-            return files
-                    .map(Path::getFileName)
+        try (var files = Files.list(Paths.get(Loader.getDynamicPackagesPath()))) {
+            return files.map(Path::getFileName)
                     .map(Path::toString)
                     .collect(Collectors.toSet());
         }
@@ -88,8 +84,9 @@ public final class ZygoteLoader {
      * @throws IOException if permission denied
      */
     public static void disableAllPackages() throws IOException {
-        try (final DirectoryStream<Path> files = Files.newDirectoryStream(Paths.get(Loader.getDynamicPackagesPath()))) {
-            for (final Path file : files) {
+        try (var files = Files.newDirectoryStream(
+                Paths.get(Loader.getDynamicPackagesPath()))) {
+            for (Path file : files) {
                 Files.delete(file);
             }
         }
@@ -111,14 +108,5 @@ public final class ZygoteLoader {
      */
     public static String getPackageName() {
         return Loader.getPackageName();
-    }
-
-    /**
-     * Get properties that read from module.prop
-     *
-     * @return map of module.prop
-     */
-    public static Map<String, String> getProperties() {
-        return Loader.getProperties();
     }
 }
