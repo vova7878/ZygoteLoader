@@ -1,11 +1,7 @@
 #pragma once
 
 #include <android/log.h>
-#include <stdlib.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdlib.h> // NOLINT(*-deprecated-headers)
 
 #define TAG "ZygoteLoader[Native]"
 
@@ -18,7 +14,3 @@ extern "C" {
 #endif
 
 #define fatal_assert(expr) if (!(expr)) LOGF("!(" #expr ")")
-
-#ifdef __cplusplus
-};
-#endif

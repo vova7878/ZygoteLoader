@@ -1,24 +1,24 @@
-#include "properties.h"
+#include "properties.hpp"
 
-#include <string.h>
 #include <malloc.h>
+#include <string.h> // NOLINT(*-deprecated-headers)
 
 void properties_for_each(const void *properties, uint32_t length,
                          void *ctx, properties_for_each_block block) {
-    char *ptr = malloc(length + 1);
+    char *ptr = (char *) malloc(length + 1);
 
     memcpy(ptr, properties, length);
     ptr[length] = '\0';
 
-    char *line_status = NULL;
+    char *line_status = nullptr;
     char *line = strtok_r(ptr, "\n", &line_status);
-    while (line != NULL) {
+    while (line != nullptr) {
         char *split = strchr(line, '=');
-        if (split != NULL) {
+        if (split != nullptr) {
             *split = '\0';
             block(ctx, line, split + 1);
         }
-        line = strtok_r(NULL, "\n", &line_status);
+        line = strtok_r(nullptr, "\n", &line_status);
     }
 
     free(ptr);

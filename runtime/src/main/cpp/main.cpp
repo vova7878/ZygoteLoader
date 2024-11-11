@@ -1,15 +1,14 @@
-#include "main_zygisk.h"
+#include "main.hpp"
 
-#include "logger.h"
-#include "properties.h"
-#include "process.h"
-#include "logger.h"
-#include "dex.h"
+#include "logger.hpp"
+#include "properties.hpp"
+#include "process.hpp"
+#include "logger.hpp"
+#include "dex.hpp"
 
 #include <jni.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <malloc.h>
 #include <string.h> // NOLINT(*-deprecated-headers)
 
 void ZygoteLoaderModule::onLoad(zygisk::Api *_api, JNIEnv *_env) {
@@ -46,7 +45,7 @@ void ZygoteLoaderModule::fetchResources() {
     int classesDexFD = openat(moduleDirFD, "classes.dex", O_RDONLY);
     fatal_assert(classesDexFD >= 0);
 
-    classesDex = resource_map_fd(classesDexFD);
+    resource_map_fd(classesDex, classesDexFD);
     close(classesDexFD);
 }
 
@@ -54,10 +53,10 @@ void ZygoteLoaderModule::reset() {
     free(currentProcessName);
     currentProcessName = nullptr;
 
-    if (moduleProp != nullptr) {
+    if (moduleProp.base != nullptr) {
         resource_release(moduleProp);
     }
-    if (classesDex != nullptr) {
+    if (classesDex.base != nullptr) {
         resource_release(classesDex);
     }
 }
@@ -75,13 +74,13 @@ void ZygoteLoaderModule::prepareFork() {
 }
 
 void ZygoteLoaderModule::tryLoadDex() {
-    if (currentProcessName != nullptr && classesDex != nullptr && moduleProp != nullptr) {
+    if (currentProcessName != nullptr && classesDex.base != nullptr && moduleProp.base != nullptr) {
         LOGD("Loading in %s", currentProcessName);
 
         dex_load_and_invoke(
                 env, currentProcessName,
-                classesDex->base, classesDex->length,
-                moduleProp->base, moduleProp->length
+                classesDex.base, classesDex.length,
+                moduleProp.base, moduleProp.length
         );
 
         reset();
@@ -100,7 +99,7 @@ bool ZygoteLoaderModule::shouldEnableForPackage(const char *packageName) {
 
     char dataDirectory[PATH_MAX] = {0};
     properties_for_each(
-            moduleProp->base, moduleProp->length, dataDirectory,
+            moduleProp.base, moduleProp.length, dataDirectory,
             reinterpret_cast<properties_for_each_block>(&extractInitializeData)
     );
     fatal_assert(strlen(dataDirectory) > 0);
@@ -129,7 +128,7 @@ void ZygoteLoaderModule::initialize() {
     int modulePropFD = openat(moduleDirFD, "module.prop", O_RDONLY);
     fatal_assert(modulePropFD >= 0);
 
-    moduleProp = resource_map_fd(modulePropFD);
+    resource_map_fd(moduleProp, modulePropFD);
     close(modulePropFD);
 }
 

@@ -22,9 +22,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LINKER_FLAGS}")
 
-set(MODULE_BASE_SOURCES properties.c process.c dex.c main.c)
+set(MODULE_BASE_SOURCES properties.cpp process.cpp dex.cpp resource.cpp)
 
-add_library(zygisk_loader SHARED main_zygisk.cpp ${MODULE_BASE_SOURCES})
+add_library(zygisk_loader SHARED main.cpp ${MODULE_BASE_SOURCES})
 target_link_libraries(zygisk_loader log)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")

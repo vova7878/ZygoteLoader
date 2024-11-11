@@ -1,7 +1,6 @@
 #pragma once
 
-#include "main.h"
-
+#include "resource.hpp"
 #include "ext/zygisk.hpp"
 
 class ZygoteLoaderModule : public zygisk::ModuleBase {
@@ -34,8 +33,8 @@ private:
     zygisk::Api *api = nullptr;
     JNIEnv *env = nullptr;
 
-    Resource *moduleProp = nullptr;
-    Resource *classesDex = nullptr;
+    Resource moduleProp = {};
+    Resource classesDex = {};
 
     char *currentProcessName = nullptr;
 };
