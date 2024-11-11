@@ -1,5 +1,7 @@
 # Generate ZygoteLoader data directory
 
+ui_print "- Initialize module data directory"
+
 DATA_PATH_FILE="/data/adb/zloader/data-root-directory"
 
 if [ ! -f "$DATA_PATH_FILE" ]; then
@@ -16,8 +18,6 @@ fi
 
 DATA_PATH="$(head -n 1 "$DATA_PATH_FILE")"
 MODULE_DATA_PATH="$DATA_PATH/$(grep_prop id "$MODPATH/module.prop")"
-
-ui_print "- Initialize module data directory"
 
 mkdir -p "$MODULE_DATA_PATH"
 

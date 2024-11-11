@@ -93,10 +93,8 @@ static void extractInitializeData(char *data, const char *key, const char *value
     }
 }
 
-bool ZygoteLoaderModule::shouldEnableForPackage(const char *packageName) {
-    int moduleDirFD = api->getModuleDir();
-    fatal_assert(moduleDirFD >= 0);
-
+bool ZygoteLoaderModule::shouldEnableForPackage(const char *packageName) const {
+    // TODO: cache dataDirectory
     char dataDirectory[PATH_MAX] = {0};
     properties_for_each(
             moduleProp.base, moduleProp.length, dataDirectory,
@@ -104,21 +102,10 @@ bool ZygoteLoaderModule::shouldEnableForPackage(const char *packageName) {
     );
     fatal_assert(strlen(dataDirectory) > 0);
 
-    int dataDirectoryFD = open(dataDirectory, O_RDONLY | O_DIRECTORY);
-    fatal_assert(dataDirectoryFD >= 0);
-
     char path[PATH_MAX] = {0};
-    sprintf(path, "packages/%s", packageName);
+    sprintf(path, "%s/packages/%s", dataDirectory, packageName);
 
-    if (faccessat(moduleDirFD, path, F_OK, 0) != 0) {
-        if (faccessat(dataDirectoryFD, path, F_OK, 0) != 0) {
-            return false;
-        }
-    }
-
-    close(dataDirectoryFD);
-
-    return true;
+    return access(path, F_OK) == 0;
 }
 
 void ZygoteLoaderModule::initialize() {

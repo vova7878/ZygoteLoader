@@ -15,19 +15,18 @@ public:
 
     void postServerSpecialize(const zygisk::ServerSpecializeArgs *args) override;
 
-public:
+private:
+    void initialize();
+
+    bool shouldEnableForPackage(const char *packageName) const;
+
     void fetchResources();
 
     void reset();
 
-    bool shouldEnableForPackage(const char *packageName);
-
     void prepareFork();
 
     void tryLoadDex();
-
-private:
-    void initialize();
 
 private:
     zygisk::Api *api = nullptr;
