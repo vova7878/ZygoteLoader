@@ -3,28 +3,24 @@ cmake_minimum_required(VERSION 3.10.2)
 project(ZygoteLoader)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_C_STANDARD 11)
 
-set(LINKER_FLAGS "-ffixed-x18 -Wl,--hash-style=both")
-set(C_FLAGS "-Werror=format -fdata-sections -ffunction-sections -fno-exceptions -fno-rtti -fno-threadsafe-statics")
+set(LINKER_FLAGS "-Wl,--hash-style=both")
+set(CXX_FLAGS "-Werror=format -fdata-sections -ffunction-sections -fno-exceptions -fno-rtti -fno-threadsafe-statics")
 
-if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(C_FLAGS "${C_FLAGS} -O2 -fvisibility=hidden -fvisibility-inlines-hidden")
-    set(LINKER_FLAGS "${LINKER_FLAGS} -Wl,-exclude-libs,ALL -Wl,--gc-sections -flto")
-else ()
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DDEBUG)
-    set(C_FLAGS "${C_FLAGS} -O0")
+    set(CXX_FLAGS "${CXX_FLAGS} -O0")
+else ()
+    set(CXX_FLAGS "${CXX_FLAGS} -O2 -fvisibility=hidden -fvisibility-inlines-hidden")
+    set(LINKER_FLAGS "${LINKER_FLAGS} -Wl,-exclude-libs,ALL -Wl,--gc-sections -flto")
 endif ()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_FLAGS}")
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LINKER_FLAGS}")
 
-set(MODULE_BASE_SOURCES properties.cpp process.cpp dex.cpp resource.cpp)
-
-add_library(zygisk_loader SHARED main.cpp ${MODULE_BASE_SOURCES})
+add_library(zygisk_loader SHARED main.cpp properties.cpp process.cpp dex.cpp resource.cpp)
 target_link_libraries(zygisk_loader log)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
