@@ -63,12 +63,10 @@ task("generateDynamicSources") {
 
 publishing {
     publications {
-        register<MavenPublication>(project.name) {
+        register<MavenPublication>("pluginMaven") {
             artifactId = project.name
             groupId = project.group.toString()
             version = project.version.toString()
-
-            from(components["java"])
         }
     }
 }
