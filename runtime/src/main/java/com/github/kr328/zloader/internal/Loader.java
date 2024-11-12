@@ -19,7 +19,6 @@ import java.util.Map;
 public final class Loader {
     private static final String TAG = "ZygoteLoader[Java]";
 
-    private static String dynamicPackagesPath;
     private static String dataDirectory;
     private static String packageName;
 
@@ -62,7 +61,6 @@ public final class Loader {
             return;
         }
 
-        Loader.dynamicPackagesPath = dataDirectory + "/packages";
         Loader.dataDirectory = dataDirectory;
         Loader.packageName = packageName;
 
@@ -76,10 +74,6 @@ public final class Loader {
         } catch (final ReflectiveOperationException e) {
             Log.e(TAG, "Invoke main of " + entrypointName, e);
         }
-    }
-
-    public static String getDynamicPackagesPath() {
-        return dynamicPackagesPath;
     }
 
     public static String getDataDirectory() {

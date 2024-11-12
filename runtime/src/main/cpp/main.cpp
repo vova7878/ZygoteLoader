@@ -1,7 +1,6 @@
 #include "main.hpp"
 
 #include "logger.hpp"
-#include "properties.hpp"
 #include "process.hpp"
 #include "logger.hpp"
 #include "dex.hpp"
@@ -87,25 +86,14 @@ void ZygoteLoaderModule::tryLoadDex() {
     }
 }
 
-static void extractInitializeData(char *data, const char *key, const char *value) {
-    if (strcmp(key, "dataDirectory") == 0) {
-        strcpy(data, value);
-    }
-}
-
-bool ZygoteLoaderModule::shouldEnableForPackage(const char *packageName) const {
-    // TODO: cache dataDirectory
-    char dataDirectory[PATH_MAX] = {0};
-    properties_for_each(
-            moduleProp.base, moduleProp.length, dataDirectory,
-            reinterpret_cast<properties_for_each_block>(&extractInitializeData)
-    );
-    fatal_assert(strlen(dataDirectory) > 0);
+bool ZygoteLoaderModule::shouldEnableForPackage(const char *packageName) {
+    int moduleDirFD = api->getModuleDir();
+    fatal_assert(moduleDirFD >= 0);
 
     char path[PATH_MAX] = {0};
-    sprintf(path, "%s/packages/%s", dataDirectory, packageName);
+    sprintf(path, "packages/%s", packageName);
 
-    return access(path, F_OK) == 0;
+    return faccessat(moduleDirFD, path, F_OK, 0) == 0;
 }
 
 void ZygoteLoaderModule::initialize() {

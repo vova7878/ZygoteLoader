@@ -18,7 +18,7 @@ public:
 private:
     void initialize();
 
-    bool shouldEnableForPackage(const char *packageName) const;
+    bool shouldEnableForPackage(const char *packageName);
 
     void fetchResources();
 
