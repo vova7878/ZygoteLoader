@@ -46,6 +46,7 @@ void ZygoteLoaderModule::fetchResources() {
 
     resource_map_fd(classesDex, classesDexFD);
     close(classesDexFD);
+    close(moduleDirFD);
 }
 
 void ZygoteLoaderModule::reset() {
@@ -94,6 +95,7 @@ bool ZygoteLoaderModule::shouldEnableForPackage(const char *packageName) {
     sprintf(path, "packages/%s", packageName);
 
     return faccessat(moduleDirFD, path, F_OK, 0) == 0;
+    close(moduleDirFD);
 }
 
 void ZygoteLoaderModule::initialize() {
@@ -105,6 +107,7 @@ void ZygoteLoaderModule::initialize() {
 
     resource_map_fd(moduleProp, modulePropFD);
     close(modulePropFD);
+    close(moduleDirFD);
 }
 
 
