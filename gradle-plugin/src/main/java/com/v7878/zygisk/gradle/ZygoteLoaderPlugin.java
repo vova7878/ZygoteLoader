@@ -1,4 +1,4 @@
-package com.github.kr328.gradle.zygote;
+package com.v7878.zygisk.gradle;
 
 import com.android.build.api.dsl.ApplicationExtension;
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension;

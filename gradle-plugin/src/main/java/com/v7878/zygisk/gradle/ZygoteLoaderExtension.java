@@ -1,4 +1,4 @@
-package com.github.kr328.gradle.zygote;
+package com.v7878.zygisk.gradle;
 
 import java.util.HashSet;
 import java.util.List;

@@ -1,8 +1,7 @@
-package com.github.kr328.zloader.internal;
+package com.v7878.zygisk;
 
 import android.util.Log;
 
-import com.github.kr328.zloader.BuildConfig;
 import com.v7878.r8.annotations.DoNotObfuscate;
 import com.v7878.r8.annotations.DoNotObfuscateType;
 import com.v7878.r8.annotations.DoNotShrink;
@@ -16,7 +15,7 @@ import java.util.Map;
 @SuppressWarnings("unused")
 @DoNotObfuscateType
 @DoNotShrinkType
-public final class Loader {
+final class EntryPoint {
     private static final String TAG = "ZygoteLoader[Java]";
 
     private static String packageName;
@@ -31,11 +30,11 @@ public final class Loader {
 
             init(packageName, StandardCharsets.UTF_8.decode(properties).toString());
         } catch (Throwable throwable) {
-            Log.e(TAG, "doLoad: " + throwable, throwable);
+            Log.e(TAG, "doLoad", throwable);
         }
     }
 
-    public static void init(String packageName, String propertiesText) {
+    private static void init(String packageName, String propertiesText) {
         Map<String, String> properties = new HashMap<>();
 
         for (String line : propertiesText.split("\n")) {
@@ -53,16 +52,14 @@ public final class Loader {
             return;
         }
 
-        Loader.packageName = packageName;
+        EntryPoint.packageName = packageName;
 
         try {
-            ClassLoader loader = Loader.class.getClassLoader();
-            if (loader == null) {
-                throw new ClassNotFoundException("ClassLoader of " + Loader.class + " unavailable");
-            }
+            ClassLoader loader = EntryPoint.class.getClassLoader();
+            assert loader != null : "ClassLoader of " + EntryPoint.class + " unavailable";
 
             loader.loadClass(entrypointName).getMethod("main").invoke(null);
-        } catch (final ReflectiveOperationException e) {
+        } catch (ReflectiveOperationException e) {
             Log.e(TAG, "Invoke main of " + entrypointName, e);
         }
     }

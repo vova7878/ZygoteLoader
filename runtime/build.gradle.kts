@@ -6,7 +6,7 @@ plugins {
 android {
     compileSdk = 35
 
-    namespace = "com.github.kr328.zloader"
+    namespace = "com.v7878.zygisk"
 
     defaultConfig {
         minSdk = 26
@@ -46,7 +46,7 @@ android {
 }
 
 dependencies {
-    compileOnly(libs.r8.annotations)
+    implementation(libs.r8.annotations)
 }
 
 publishing {

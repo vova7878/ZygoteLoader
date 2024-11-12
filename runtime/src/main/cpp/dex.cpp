@@ -48,7 +48,7 @@ void dex_load_and_invoke(JNIEnv *env, const char *package_name,
     auto c_loader = (jclass) env->CallObjectMethod(
             o_dex_class_loader,
             m_load_class,
-            new_string("com.github.kr328.zloader.internal.Loader")
+            new_string("com.v7878.zygisk.EntryPoint")
     );
     fatal_assert(c_loader != nullptr);
 

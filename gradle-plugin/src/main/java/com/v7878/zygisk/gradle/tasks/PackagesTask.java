@@ -1,4 +1,4 @@
-package com.github.kr328.gradle.zygote.tasks;
+package com.v7878.zygisk.gradle.tasks;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.DirectoryProperty;

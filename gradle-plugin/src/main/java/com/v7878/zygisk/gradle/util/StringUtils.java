@@ -1,4 +1,4 @@
-package com.github.kr328.gradle.zygote.util;
+package com.v7878.zygisk.gradle.util;
 
 import javax.annotation.Nonnull;
 

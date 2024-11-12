@@ -1,12 +1,12 @@
-package com.github.kr328.gradle.zygote;
+package com.v7878.zygisk.gradle;
 
 import com.android.build.api.variant.ApplicationVariant;
 import com.android.build.api.variant.VariantOutput;
-import com.github.kr328.gradle.zygote.tasks.ChecksumTask;
-import com.github.kr328.gradle.zygote.tasks.CustomizeTask;
-import com.github.kr328.gradle.zygote.tasks.PackagesTask;
-import com.github.kr328.gradle.zygote.tasks.PropertiesTask;
-import com.github.kr328.gradle.zygote.util.StringUtils;
+import com.v7878.zygisk.gradle.tasks.ChecksumTask;
+import com.v7878.zygisk.gradle.tasks.CustomizeTask;
+import com.v7878.zygisk.gradle.tasks.PackagesTask;
+import com.v7878.zygisk.gradle.tasks.PropertiesTask;
+import com.v7878.zygisk.gradle.util.StringUtils;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;

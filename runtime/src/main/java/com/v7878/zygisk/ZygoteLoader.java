@@ -1,6 +1,4 @@
-package com.github.kr328.zloader;
-
-import com.github.kr328.zloader.internal.Loader;
+package com.v7878.zygisk;
 
 /**
  * Utilize to manage ZygoteLoader.
@@ -19,6 +17,6 @@ public final class ZygoteLoader {
      * @return package name
      */
     public static String getPackageName() {
-        return Loader.getPackageName();
+        return EntryPoint.getPackageName();
     }
 }

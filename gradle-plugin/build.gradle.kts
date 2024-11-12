@@ -18,8 +18,8 @@ dependencies {
 gradlePlugin {
     plugins {
         create("zygote") {
-            id = "com.github.vova7878.ZygoteLoader"
-            implementationClass = "com.github.kr328.gradle.zygote.ZygoteLoaderPlugin"
+            id = "${rootProject.group}.${rootProject.name}"
+            implementationClass = "com.v7878.zygisk.gradle.ZygoteLoaderPlugin"
         }
     }
 }
@@ -33,28 +33,26 @@ sourceSets {
 }
 
 task("generateDynamicSources") {
-    inputs.property("moduleGroup", project.group)
-    inputs.property("moduleArtifact", project.name)
-    inputs.property("moduleVersion", project.version)
     outputs.dir(dynamicSources)
+
     tasks.withType(JavaCompile::class.java).forEach { it.dependsOn(this) }
     tasks["sourcesJar"].dependsOn(this)
 
     doFirst {
         val buildConfig = dynamicSources.file(
-            "com/github/kr328/gradle/zygote/BuildConfig.java"
+            "com/v7878/zygisk/gradle/BuildConfig.java"
         ).asFile
 
         buildConfig.parentFile.mkdirs()
 
-        val rp = project(":runtime")
+        val runtimeProject = project(":runtime")
         buildConfig.writeText(
             """
-            package com.github.kr328.gradle.zygote;
+            package com.v7878.zygisk.gradle;
             
             public final class BuildConfig {
                 public static final String RUNTIME_DEPENDENCY =
-                 "${rp.group}.ZygoteLoader:${rp.name}:${rp.version}";
+                 "${rootProject.group}.${rootProject.name}:${runtimeProject.name}:${runtimeProject.version}";
             }
             """.trimIndent()
         )
