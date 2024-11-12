@@ -58,9 +58,9 @@ public final class ZygoteLoaderDecorator {
             throw new GradleException(String.format(
                     "module id \"%s\" does not match %s", extension.getId(), ID_PATTERN));
         }
-        putProperty(moduleProps, "name", false, extension.getName());
-        putProperty(moduleProps, "author", false, extension.getAuthor());
-        putProperty(moduleProps, "description", false, extension.getDescription());
+        putProperty(moduleProps, "name", true, extension.getName());
+        putProperty(moduleProps, "author", true, extension.getAuthor());
+        putProperty(moduleProps, "description", true, extension.getDescription());
         putProperty(moduleProps, "entrypoint", true, extension.getEntrypoint());
         putProperty(moduleProps, "updateJson", false, extension.getUpdateJson());
 
