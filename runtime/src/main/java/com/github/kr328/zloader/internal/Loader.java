@@ -19,7 +19,6 @@ import java.util.Map;
 public final class Loader {
     private static final String TAG = "ZygoteLoader[Java]";
 
-    private static String dataDirectory;
     private static String packageName;
 
     @DoNotObfuscate
@@ -47,13 +46,6 @@ public final class Loader {
             properties.put(kv[0].trim(), kv[1].trim());
         }
 
-        String dataDirectory = properties.get("dataDirectory");
-        if (dataDirectory == null) {
-            Log.e(TAG, "Data directory not found");
-
-            return;
-        }
-
         String entrypointName = properties.get("entrypoint");
         if (entrypointName == null) {
             Log.e(TAG, "Entrypoint not found");
@@ -61,7 +53,6 @@ public final class Loader {
             return;
         }
 
-        Loader.dataDirectory = dataDirectory;
         Loader.packageName = packageName;
 
         try {
@@ -74,10 +65,6 @@ public final class Loader {
         } catch (final ReflectiveOperationException e) {
             Log.e(TAG, "Invoke main of " + entrypointName, e);
         }
-    }
-
-    public static String getDataDirectory() {
-        return dataDirectory;
     }
 
     public static String getPackageName() {

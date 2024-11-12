@@ -14,15 +14,6 @@ public final class ZygoteLoader {
     public static final String PACKAGE_SYSTEM_SERVER = "android";
 
     /**
-     * Get module data directory path
-     *
-     * @return module data directory
-     */
-    public static String getDataDirectory() {
-        return Loader.getDataDirectory();
-    }
-
-    /**
      * Get currently injected package name
      *
      * @return package name
