@@ -1,17 +1,23 @@
 # Zygote Loader
 
-A library for building Java only Zygisk/Riru modules.
+A library for building Java only Zygisk modules.
 
 ## Getting Start
 
-1. **Add plugin repository to settings.gradle.kts**
+1. **Add jitpack repository to settings.gradle**
 
-```kotlin
-pluginManagement { 
-    repositories { 
+```groovy
+pluginManagement {
+    repositories {
         // ... other repositories 
-        maven(url = "https://maven.kr328.app/releases") 
-    } 
+        maven { url 'https://jitpack.io' }
+    }
+}
+dependencyResolutionManagement {
+    repositories {
+        // ... other repositories 
+        maven { url 'https://jitpack.io' }
+    }
 }
 ```
 
@@ -26,50 +32,43 @@ class Entrypoint {
 }
 ```
 
-3. **Apply `com.github.kr328.gradle.zygote` plugin**
+3. **Apply `com.github.vova7878.ZygoteLoader` plugin**
 
-```kotlin
+```groovy
 plugins {
-    id("com.android.application") // required
-    id("com.github.kr328.gradle.zygote") version "3.1" // apply plugin
+    id "com.android.application" // required
+    id "com.github.vova7878.ZygoteLoader" version "<commit>" // apply plugin
     // ... other plugins
 }
 ```
 
 4. **Configure your module properties**
 
-```kotlin
-zygote {
-    // initial inject packages
-    packages(ZygoteLoader.PACKAGE_SYSTEM_SERVER) // initial inject to system_server
+```groovy
+zygisk {
+    // inject to system_server
+    packages(ZygoteLoader.PACKAGE_SYSTEM_SERVER)
 
-    // riru related properties
-    riru {
-        id = "your module id"
-        name = "your module name"
-        author = "your name"
-        description = "your module description"
-        entrypoint = "your entrypoint class qualified name" // see also step 2
-        archiveName = "generated zip archive name" // optional
-        updateJson = "your updateJson property" // optional, see also https://topjohnwu.github.io/Magisk/guides.html#moduleprop
-    }
-
-    // zygisk related properties
-    zygisk {
-        // same with riru
-    }
+    // module properties
+    id = "your module id"
+    name = "your module name"
+    author = "your name"
+    description = "your module description"
+    entrypoint = "your entrypoint class qualified name" // see also step 2
+    archiveName = "generated zip archive name" // optional
+    updateJson = "your updateJson property" // optional, see also https://topjohnwu.github.io/Magisk/guides.html#moduleprop
 }
 ```
 
 5. **Build module**
 
     1. Run gradle task `<module>:assembleRelease`
-       
+
     2. Pick generated zip from `<module>/build/outputs/magisk`
-   
+
 
 ## Examples
 
-- [Riru-ClipboardWhitelist](https://github.com/Kr328/Riru-ClipboardWhitelist)
-  
-- [Riru-IFWEnhance](https://github.com/Kr328/Riru-IFWEnhance)
+- [ScreenshotsEverywhere](https://github.com/vova7878-modules/ScreenshotsEverywhere)
+
+- [NoStorageRestrict](https://github.com/vova7878-modules/NoStorageRestrict)
