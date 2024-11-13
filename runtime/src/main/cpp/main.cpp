@@ -2,7 +2,6 @@
 
 #include "logger.hpp"
 #include "process.hpp"
-#include "logger.hpp"
 #include "dex.hpp"
 
 #include <jni.h>
@@ -13,8 +12,6 @@
 void ZygoteLoaderModule::onLoad(zygisk::Api *_api, JNIEnv *_env) {
     api = _api;
     env = _env;
-
-    initialize();
 }
 
 void ZygoteLoaderModule::preAppSpecialize(zygisk::AppSpecializeArgs *args) {
@@ -37,16 +34,42 @@ void ZygoteLoaderModule::postServerSpecialize(const zygisk::ServerSpecializeArgs
     tryLoadDex();
 }
 
+bool ZygoteLoaderModule::shouldEnable() {
+    int moduleDirFD = api->getModuleDir();
+    fatal_assert(moduleDirFD >= 0);
+
+    char path[PATH_MAX] = {0};
+    sprintf(path, "packages/%s", currentProcessName);
+
+    return faccessat(moduleDirFD, path, F_OK, 0) == 0;
+    close(moduleDirFD);
+}
+
 void ZygoteLoaderModule::fetchResources() {
     int moduleDirFD = api->getModuleDir();
     fatal_assert(moduleDirFD >= 0);
 
+    int modulePropFD = openat(moduleDirFD, "module.prop", O_RDONLY);
+    fatal_assert(modulePropFD >= 0);
+    resource_map_fd(moduleProp, modulePropFD);
+    close(modulePropFD);
+
     int classesDexFD = openat(moduleDirFD, "classes.dex", O_RDONLY);
     fatal_assert(classesDexFD >= 0);
-
     resource_map_fd(classesDex, classesDexFD);
     close(classesDexFD);
+
     close(moduleDirFD);
+}
+
+void ZygoteLoaderModule::prepareFork() {
+    if (shouldEnable()) {
+        fetchResources();
+    }
+
+    LOGD("Request dlclose module");
+
+    api->setOption(zygisk::DLCLOSE_MODULE_LIBRARY);
 }
 
 void ZygoteLoaderModule::reset() {
@@ -61,20 +84,10 @@ void ZygoteLoaderModule::reset() {
     }
 }
 
-void ZygoteLoaderModule::prepareFork() {
-    if (shouldEnableForPackage(currentProcessName)) {
-        fetchResources();
-    } else {
-        reset();
-    }
-
-    LOGD("Request dlclose module");
-
-    api->setOption(zygisk::DLCLOSE_MODULE_LIBRARY);
-}
-
 void ZygoteLoaderModule::tryLoadDex() {
-    if (currentProcessName != nullptr && classesDex.base != nullptr && moduleProp.base != nullptr) {
+    if (currentProcessName != nullptr
+        && classesDex.base != nullptr
+        && moduleProp.base != nullptr) {
         LOGD("Loading in %s", currentProcessName);
 
         dex_load_and_invoke(
@@ -82,33 +95,9 @@ void ZygoteLoaderModule::tryLoadDex() {
                 classesDex.base, classesDex.length,
                 moduleProp.base, moduleProp.length
         );
-
-        reset();
     }
+
+    reset();
 }
-
-bool ZygoteLoaderModule::shouldEnableForPackage(const char *packageName) {
-    int moduleDirFD = api->getModuleDir();
-    fatal_assert(moduleDirFD >= 0);
-
-    char path[PATH_MAX] = {0};
-    sprintf(path, "packages/%s", packageName);
-
-    return faccessat(moduleDirFD, path, F_OK, 0) == 0;
-    close(moduleDirFD);
-}
-
-void ZygoteLoaderModule::initialize() {
-    int moduleDirFD = api->getModuleDir();
-    fatal_assert(moduleDirFD >= 0);
-
-    int modulePropFD = openat(moduleDirFD, "module.prop", O_RDONLY);
-    fatal_assert(modulePropFD >= 0);
-
-    resource_map_fd(moduleProp, modulePropFD);
-    close(modulePropFD);
-    close(moduleDirFD);
-}
-
 
 REGISTER_ZYGISK_MODULE(ZygoteLoaderModule)

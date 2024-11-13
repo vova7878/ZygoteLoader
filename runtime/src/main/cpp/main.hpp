@@ -16,15 +16,13 @@ public:
     void postServerSpecialize(const zygisk::ServerSpecializeArgs *args) override;
 
 private:
-    void initialize();
-
-    bool shouldEnableForPackage(const char *packageName);
+    bool shouldEnable();
 
     void fetchResources();
 
-    void reset();
-
     void prepareFork();
+
+    void reset();
 
     void tryLoadDex();
 
