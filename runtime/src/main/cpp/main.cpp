@@ -34,15 +34,26 @@ void ZygoteLoaderModule::postServerSpecialize(const zygisk::ServerSpecializeArgs
     tryLoadDex();
 }
 
+bool testPackage(int fd, const char *name) {
+    char path[PATH_MAX] = {0};
+    sprintf(path, "packages/%s", name);
+
+    return faccessat(fd, path, F_OK, 0) == 0;
+}
+
 bool ZygoteLoaderModule::shouldEnable() {
     int moduleDirFD = api->getModuleDir();
     fatal_assert(moduleDirFD >= 0);
 
-    char path[PATH_MAX] = {0};
-    sprintf(path, "packages/%s", currentProcessName);
+    bool enable = false;
+    if (testPackage(moduleDirFD, currentProcessName) ||
+        testPackage(moduleDirFD, ALL_PACKAGES_NAME)) {
+        enable = true;
+    }
 
-    return faccessat(moduleDirFD, path, F_OK, 0) == 0;
     close(moduleDirFD);
+
+    return enable;
 }
 
 void ZygoteLoaderModule::fetchResources() {

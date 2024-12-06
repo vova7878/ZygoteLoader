@@ -10,6 +10,7 @@ public final class ZygoteLoader {
      * {@link #getPackageName}
      */
     public static final String PACKAGE_SYSTEM_SERVER = "android";
+    public static final String ALL_PACKAGES = ".all";
 
     /**
      * Get currently injected package name
