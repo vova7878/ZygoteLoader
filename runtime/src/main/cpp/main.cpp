@@ -46,7 +46,7 @@ bool ZygoteLoaderModule::shouldEnable() {
     fatal_assert(moduleDirFD >= 0);
 
     bool enable = false;
-    if (testPackage(moduleDirFD, currentProcessName) ||
+    if (testPackage(moduleDirFD, currentProcessName) ^
         testPackage(moduleDirFD, ALL_PACKAGES_NAME)) {
         enable = true;
     }
