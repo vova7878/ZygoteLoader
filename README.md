@@ -66,7 +66,6 @@ zygisk {
 
     2. Pick generated zip from `<module>/build/outputs/magisk`
 
-
 ## Examples
 
 - [ScreenshotsEverywhere](https://github.com/vova7878-modules/ScreenshotsEverywhere)
