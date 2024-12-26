@@ -1,5 +1,7 @@
 package com.v7878.zygisk.gradle;
 
+import com.android.build.api.variant.VariantExtension;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -7,7 +9,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ZygoteLoaderExtension {
+public class ZygoteLoaderExtension implements VariantExtension {
     private final Set<String> packages = new HashSet<>();
 
     @Nonnull
