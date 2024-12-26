@@ -10,6 +10,7 @@ import org.gradle.api.Project;
 
 import javax.annotation.Nonnull;
 
+@SuppressWarnings("UnstableApiUsage")
 public class ZygoteLoaderPlugin implements Plugin<Project> {
     @Override
     public void apply(@Nonnull Project target) {
@@ -24,19 +25,14 @@ public class ZygoteLoaderPlugin implements Plugin<Project> {
                 .getDefaultConfig().setMultiDexEnabled(false);
 
         target.getExtensions().configure(ApplicationAndroidComponentsExtension.class, components -> {
-            //noinspection UnstableApiUsage
-            components.registerExtension(
-                    new DslExtension.Builder("zygisk").extendProductFlavorWith(ZygoteLoaderExtension.class).build(),
-                    config -> new ZygoteLoaderExtension()
-            );
-
-            //components.beforeVariants(components.selector().all(), variantBuilder -> {
-            //    var extensionInstance = new ZygoteLoaderExtension();
-            //    variantBuilder.registerExtension(ZygoteLoaderExtension.class, extensionInstance);
-            //});
+            var extension = new DslExtension.Builder("zygisk")
+                    .extendProductFlavorWith(ZygoteLoaderExtension.class).build();
+            components.registerExtension(extension, config -> new ZygoteLoaderExtension());
 
             ZygoteLoaderDecorator decorator = new ZygoteLoaderDecorator(target);
-            components.onVariants(components.selector().all(), decorator::decorateVariant);
+            components.onVariants(components.selector().all(), variant -> {
+                target.afterEvaluate(prj -> decorator.decorateVariant(variant));
+            });
         });
     }
 }
