@@ -91,4 +91,29 @@ public class ZygoteLoaderExtension implements VariantExtension {
     public void setUpdateJson(@Nullable String updateJson) {
         this.updateJson = updateJson;
     }
+
+    private static ZygoteLoaderExtension merge(ZygoteLoaderExtension a,
+                                               ZygoteLoaderExtension b) {
+        var out = new ZygoteLoaderExtension();
+        out.packages.addAll(a.packages);
+        out.packages.addAll(b.packages);
+        out.id = b.id == null ? a.id : b.id;
+        out.name = b.name == null ? a.name : b.name;
+        out.author = b.author == null ? a.author : b.author;
+        out.description = b.description == null ? a.description : b.description;
+        out.entrypoint = b.entrypoint == null ? a.entrypoint : b.entrypoint;
+        out.archiveName = b.archiveName == null ? a.archiveName : b.archiveName;
+        out.updateJson = b.updateJson == null ? a.updateJson : b.updateJson;
+        return out;
+    }
+
+    public static ZygoteLoaderExtension merge(ZygoteLoaderExtension projectExtension,
+                                              ZygoteLoaderExtension buildTypeExtension,
+                                              List<ZygoteLoaderExtension> productFlavorsExtensions) {
+        projectExtension = merge(projectExtension, buildTypeExtension);
+        for (var flavorExtenion : productFlavorsExtensions) {
+            projectExtension = merge(projectExtension, flavorExtenion);
+        }
+        return projectExtension;
+    }
 }

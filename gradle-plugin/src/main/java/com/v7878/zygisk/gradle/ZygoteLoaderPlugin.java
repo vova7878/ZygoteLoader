@@ -26,8 +26,18 @@ public class ZygoteLoaderPlugin implements Plugin<Project> {
 
         target.getExtensions().configure(ApplicationAndroidComponentsExtension.class, components -> {
             var extension = new DslExtension.Builder("zygisk")
-                    .extendProductFlavorWith(ZygoteLoaderExtension.class).build();
-            components.registerExtension(extension, config -> new ZygoteLoaderExtension());
+                    .extendProjectWith(ZygoteLoaderExtension.class)
+                    .extendBuildTypeWith(ZygoteLoaderExtension.class)
+                    .extendProductFlavorWith(ZygoteLoaderExtension.class)
+                    .build();
+
+            components.registerExtension(extension, config ->
+                    ZygoteLoaderExtension.merge(
+                            config.projectExtension(ZygoteLoaderExtension.class),
+                            config.buildTypeExtension(ZygoteLoaderExtension.class),
+                            config.productFlavorsExtensions(ZygoteLoaderExtension.class)
+                    )
+            );
 
             ZygoteLoaderDecorator decorator = new ZygoteLoaderDecorator(target);
             components.onVariants(components.selector().all(), variant -> {
