@@ -24,16 +24,18 @@ public class ZygoteLoaderPlugin implements Plugin<Project> {
         target.getExtensions().getByType(ApplicationExtension.class)
                 .getDefaultConfig().setMultiDexEnabled(false);
 
+        ZygoteLoaderExtension projectExtension = target.getExtensions()
+                .create("zygisk", ZygoteLoaderExtension.class);
+
         target.getExtensions().configure(ApplicationAndroidComponentsExtension.class, components -> {
             var extension = new DslExtension.Builder("zygisk")
-                    .extendProjectWith(ZygoteLoaderExtension.class)
                     .extendBuildTypeWith(ZygoteLoaderExtension.class)
                     .extendProductFlavorWith(ZygoteLoaderExtension.class)
                     .build();
 
             components.registerExtension(extension, config ->
                     ZygoteLoaderExtension.merge(
-                            config.projectExtension(ZygoteLoaderExtension.class),
+                            projectExtension,
                             config.buildTypeExtension(ZygoteLoaderExtension.class),
                             config.productFlavorsExtensions(ZygoteLoaderExtension.class)
                     )
