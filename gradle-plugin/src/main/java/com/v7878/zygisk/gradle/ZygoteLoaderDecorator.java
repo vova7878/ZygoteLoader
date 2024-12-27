@@ -28,11 +28,9 @@ public final class ZygoteLoaderDecorator {
     private static final String ID_PATTERN = "^[a-zA-Z][a-zA-Z0-9._-]+$";
 
     private final Project project;
-    private final ZygoteLoaderExtension extension;
 
-    public ZygoteLoaderDecorator(Project project, ZygoteLoaderExtension extension) {
+    public ZygoteLoaderDecorator(Project project) {
         this.project = project;
-        this.extension = extension;
     }
 
     private static void putProperty(Map<String, String> props, String name, boolean required, String value) {
@@ -41,6 +39,8 @@ public final class ZygoteLoaderDecorator {
     }
 
     public void decorateVariant(ApplicationVariant variant) {
+        var extension = variant.getExtension(ZygoteLoaderExtension.class);
+
         TaskProvider<Task> pack = project.getTasks().named("package" + StringUtils.capitalize(variant.getName()));
         VariantOutput variantOutput = variant.getOutputs().stream().findAny().orElseThrow();
 
