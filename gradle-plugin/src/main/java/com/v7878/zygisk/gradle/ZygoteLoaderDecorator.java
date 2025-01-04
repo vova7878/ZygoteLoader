@@ -64,6 +64,8 @@ public final class ZygoteLoaderDecorator {
         putProperty(moduleProps, "entrypoint", true, extension.getEntrypoint());
         putProperty(moduleProps, "updateJson", false, extension.getUpdateJson());
 
+        moduleProps.putAll(extension.getAdditionalProperties());
+
         TaskProvider<PropertiesTask> generateModuleProp = project.getTasks().register(
                 "generateModuleProp" + StringUtils.capitalize(variant.getName()),
                 PropertiesTask.class, task -> {
