@@ -9,6 +9,7 @@ import com.v7878.r8.annotations.DoNotShrinkType;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +20,7 @@ final class EntryPoint {
     private static final String TAG = "ZygoteLoader[Java]";
 
     private static String packageName;
+    private static Map<String, String> moduleProps;
 
     @DoNotObfuscate
     @DoNotShrink
@@ -53,12 +55,10 @@ final class EntryPoint {
         }
 
         EntryPoint.packageName = packageName;
+        EntryPoint.moduleProps = Collections.unmodifiableMap(properties);
 
         try {
-            ClassLoader loader = EntryPoint.class.getClassLoader();
-            assert loader != null : "ClassLoader of " + EntryPoint.class + " unavailable";
-
-            loader.loadClass(entrypointName).getMethod("main").invoke(null);
+            Class.forName(entrypointName).getMethod("main").invoke(null);
         } catch (ReflectiveOperationException e) {
             Log.e(TAG, "Invoke main of " + entrypointName, e);
         }
@@ -66,5 +66,9 @@ final class EntryPoint {
 
     public static String getPackageName() {
         return packageName;
+    }
+
+    public static Map<String, String> getProperties() {
+        return moduleProps;
     }
 }

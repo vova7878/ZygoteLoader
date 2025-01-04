@@ -1,5 +1,7 @@
 package com.v7878.zygisk;
 
+import java.util.Map;
+
 /**
  * Utilize to manage ZygoteLoader.
  */
@@ -19,5 +21,14 @@ public final class ZygoteLoader {
      */
     public static String getPackageName() {
         return EntryPoint.getPackageName();
+    }
+
+    /**
+     * Get properties that read from module.prop
+     *
+     * @return map of module.prop
+     */
+    public static Map<String, String> getProperties() {
+        return EntryPoint.getProperties();
     }
 }

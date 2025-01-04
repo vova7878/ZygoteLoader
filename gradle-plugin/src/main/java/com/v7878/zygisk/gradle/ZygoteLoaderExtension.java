@@ -2,8 +2,11 @@ package com.v7878.zygisk.gradle;
 
 import com.android.build.api.variant.VariantExtension;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -19,6 +22,19 @@ public class ZygoteLoaderExtension implements VariantExtension {
 
     public void packages(@Nonnull String... pkgs) {
         packages.addAll(List.of(pkgs));
+    }
+
+    private final Map<String, String> props = new HashMap<>();
+
+    @Nonnull
+    public Map<String, String> getAdditionalProperties() {
+        return props;
+    }
+
+    public void property(@Nonnull String key, @Nonnull String value) {
+        Objects.requireNonNull(key);
+        Objects.requireNonNull(value);
+        props.put(key, value);
     }
 
     private String id;
@@ -97,6 +113,8 @@ public class ZygoteLoaderExtension implements VariantExtension {
         var out = new ZygoteLoaderExtension();
         out.packages.addAll(a.packages);
         out.packages.addAll(b.packages);
+        out.props.putAll(a.props);
+        out.props.putAll(b.props);
         out.id = b.id == null ? a.id : b.id;
         out.name = b.name == null ? a.name : b.name;
         out.author = b.author == null ? a.author : b.author;
