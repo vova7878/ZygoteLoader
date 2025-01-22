@@ -1,6 +1,6 @@
 #pragma once
 
-#include "resource.hpp"
+#include "raii.hpp"
 #include "ext/zygisk.hpp"
 
 class ZygoteLoaderModule : public zygisk::ModuleBase {
@@ -16,8 +16,6 @@ public:
     void postServerSpecialize(const zygisk::ServerSpecializeArgs *args) override;
 
 private:
-    bool shouldEnable(const char *package_name);
-
     void tryLoadDex(const char *package_name);
 
     void callJavaPreSpecialize();
