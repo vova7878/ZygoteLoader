@@ -16,22 +16,16 @@ public:
     void postServerSpecialize(const zygisk::ServerSpecializeArgs *args) override;
 
 private:
-    bool shouldEnable();
+    bool shouldEnable(const char *package_name);
 
-    void fetchResources();
+    void tryLoadDex(const char *package_name);
 
-    void prepareFork();
+    void callJavaPreSpecialize();
 
-    void reset();
-
-    void tryLoadDex();
+    void callJavaPostSpecialize();
 
 private:
     zygisk::Api *api = nullptr;
     JNIEnv *env = nullptr;
-
-    Resource moduleProp = {};
-    Resource classesDex = {};
-
-    char *currentProcessName = nullptr;
+    jclass entrypoint = nullptr;
 };

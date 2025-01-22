@@ -5,20 +5,25 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-void resource_map_fd(Resource &resource, int fd) {
+#include <fcntl.h>
+#include <unistd.h>
+
+Resource::Resource(int dirfd, const char *name) {
+    int resfd = openat(dirfd, name, O_RDONLY);
+    fatal_assert(resfd >= 0);
+
     struct stat s{};
-    fatal_assert(fstat(fd, &s) >= 0);
+    fatal_assert(fstat(resfd, &s) >= 0);
 
-    void *base = mmap(nullptr, s.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    fatal_assert(base != MAP_FAILED);
+    void *data = mmap(nullptr, s.st_size, PROT_READ, MAP_SHARED, resfd, 0);
+    fatal_assert(data != MAP_FAILED);
 
-    resource.base = base;
-    resource.length = s.st_size;
+    close(resfd);
+
+    base = data;
+    length = s.st_size;
 }
 
-void resource_release(Resource &resource) {
-    munmap(resource.base, resource.length);
-
-    resource.base = nullptr;
-    resource.length = 0;
+Resource::~Resource() {
+    fatal_assert(munmap(base, length) >= 0);
 }

@@ -6,9 +6,9 @@
 #define find_method(var_name, clazz, name, signature) jmethodID var_name = env->GetMethodID(clazz, name, signature); fatal_assert((var_name) != NULL)
 #define new_string(text) env->NewStringUTF(text)
 
-void dex_load_and_invoke(JNIEnv *env, const char *package_name,
+jclass dex_load_and_init(JNIEnv *env, const char *package_name,
                          const void *dex_block, uint32_t dex_length,
-                         const void *properties_block, uint32_t properties_length) {
+                         const void *props_block, uint32_t props_length) {
 
     find_class(c_class_loader, "java/lang/ClassLoader");
     find_static_method(
@@ -45,18 +45,30 @@ void dex_load_and_invoke(JNIEnv *env, const char *package_name,
             "(Ljava/lang/String;)Ljava/lang/Class;"
     );
 
-    auto c_loader = (jclass) env->CallObjectMethod(
+    auto c_entrypoint = (jclass) env->CallObjectMethod(
             o_dex_class_loader,
             m_load_class,
             new_string("com.v7878.zygisk.EntryPoint")
     );
-    fatal_assert(c_loader != nullptr);
+    fatal_assert(c_entrypoint != nullptr);
 
-    find_static_method(m_load, c_loader, "load", "(Ljava/lang/String;Ljava/nio/ByteBuffer;)V");
+    find_static_method(m_load, c_entrypoint, "load", "(Ljava/lang/String;Ljava/nio/ByteBuffer;)V");
     env->CallStaticVoidMethod(
-            c_loader,
+            c_entrypoint,
             m_load,
             new_string(package_name),
-            env->NewDirectByteBuffer((void *) properties_block, properties_length)
+            env->NewDirectByteBuffer((void *) props_block, props_length)
     );
+
+    return c_entrypoint;
+}
+
+void dex_call_pre_specialize(JNIEnv *env, jclass entrypoint) {
+    find_static_method(m_pre_specialize, entrypoint, "preSpecialize", "()V");
+    env->CallStaticVoidMethod(entrypoint, m_pre_specialize);
+}
+
+void dex_call_post_specialize(JNIEnv *env, jclass entrypoint) {
+    find_static_method(m_post_specialize, entrypoint, "postSpecialize", "()V");
+    env->CallStaticVoidMethod(entrypoint, m_post_specialize);
 }

@@ -20,19 +20,19 @@ final class EntryPoint {
     private static final String TAG = "ZygoteLoader[Java]";
 
     private static String packageName;
-    private static Map<String, String> moduleProps;
+    private static Map<String, String> properties;
 
     @DoNotObfuscate
     @DoNotShrink
+    // TODO: read module.prop on java side
     private static void load(String packageName, ByteBuffer properties) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Loading in " + packageName);
+        }
         try {
-            if (BuildConfig.DEBUG) {
-                Log.d(TAG, "Loading in " + packageName);
-            }
-
             init(packageName, StandardCharsets.UTF_8.decode(properties).toString());
         } catch (Throwable throwable) {
-            Log.e(TAG, "doLoad", throwable);
+            Log.e(TAG, "load", throwable);
         }
     }
 
@@ -47,15 +47,24 @@ final class EntryPoint {
             properties.put(kv[0].trim(), kv[1].trim());
         }
 
+        EntryPoint.packageName = packageName;
+        EntryPoint.properties = Collections.unmodifiableMap(properties);
+    }
+
+    @DoNotObfuscate
+    @DoNotShrink
+    private static void preSpecialize() {
+        // TODO: premain
+    }
+
+    @DoNotObfuscate
+    @DoNotShrink
+    private static void postSpecialize() {
         String entrypointName = properties.get("entrypoint");
         if (entrypointName == null) {
             Log.e(TAG, "Entrypoint not found");
-
             return;
         }
-
-        EntryPoint.packageName = packageName;
-        EntryPoint.moduleProps = Collections.unmodifiableMap(properties);
 
         try {
             Class.forName(entrypointName).getMethod("main").invoke(null);
@@ -69,6 +78,6 @@ final class EntryPoint {
     }
 
     public static Map<String, String> getProperties() {
-        return moduleProps;
+        return properties;
     }
 }
