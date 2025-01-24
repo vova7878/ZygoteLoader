@@ -1,6 +1,6 @@
 #pragma once
 
-#include "resource.hpp"
+#include "raii.hpp"
 #include "ext/zygisk.hpp"
 
 class ZygoteLoaderModule : public zygisk::ModuleBase {
@@ -16,22 +16,14 @@ public:
     void postServerSpecialize(const zygisk::ServerSpecializeArgs *args) override;
 
 private:
-    bool shouldEnable();
+    void tryLoadDex(const char *package_name);
 
-    void fetchResources();
+    void callJavaPreSpecialize();
 
-    void prepareFork();
-
-    void reset();
-
-    void tryLoadDex();
+    void callJavaPostSpecialize();
 
 private:
     zygisk::Api *api = nullptr;
     JNIEnv *env = nullptr;
-
-    Resource moduleProp = {};
-    Resource classesDex = {};
-
-    char *currentProcessName = nullptr;
+    jclass entrypoint = nullptr;
 };
