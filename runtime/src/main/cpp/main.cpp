@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <errno.h> // NOLINT(*-deprecated-headers)
 #include <string.h> // NOLINT(*-deprecated-headers)
 
 void ZygoteLoaderModule::onLoad(zygisk::Api *_api, JNIEnv *_env) {
@@ -44,7 +45,10 @@ void ZygoteLoaderModule::postServerSpecialize(const zygisk::ServerSpecializeArgs
 }
 
 bool testPackage(int packages_dir, const char *name) {
-    return faccessat(packages_dir, name, F_OK, 0) == 0;
+    int res = faccessat(packages_dir, name, F_OK, 0);
+    if (res == 0) return true;
+    LOGI("faccessat returned %i and errno %s for package %s", res, strerror(errno), name);
+    return false;
 }
 
 bool shouldEnable(int module_dir, const char *package_name) {
