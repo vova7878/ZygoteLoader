@@ -45,18 +45,12 @@ void ZygoteLoaderModule::postServerSpecialize(const zygisk::ServerSpecializeArgs
 }
 
 bool testPackage(int packages_dir, const char *name) {
-    int res = faccessat(packages_dir, name, F_OK, 0);
-    if (res == 0) return true;
-    LOGI("faccessat returned %i and errno %s for package %s", res, strerror(errno), name);
-    return false;
+    return faccessat(packages_dir, name, F_OK, 0) == 0;
 }
 
 bool shouldEnable(int module_dir, const char *package_name) {
-    int fd = openat(module_dir, "packages", O_PATH | O_DIRECTORY);
-    if (fd == -1) {
-        LOGI("openat returned %i and errno %s for package %s", fd, strerror(errno), package_name);
-    }
-    RAIIFD packages_dir = fd;
+    RAIIFD<true> packages_dir = openat(module_dir, "packages", O_PATH | O_DIRECTORY);
+    if (!packages_dir.isValid()) return false;
     return testPackage(packages_dir, package_name) ^
            testPackage(packages_dir, ALL_PACKAGES_NAME);
 }
