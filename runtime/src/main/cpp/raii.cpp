@@ -23,7 +23,7 @@ RAIIFile::RAIIFile(int dirfd, const char *name) {
     struct stat s{};
     fatal_assert(fstat(res.value, &s) >= 0);
 
-    void *base = mmap(nullptr, s.st_size, PROT_READ, MAP_SHARED, res.value, 0);
+    void *base = mmap(nullptr, s.st_size, PROT_READ, MAP_SHARED, res, 0);
     fatal_assert(base != MAP_FAILED);
 
     data = base;

@@ -3,10 +3,13 @@
 #include "logger.hpp"
 #include "process.hpp"
 #include "dex.hpp"
+#include "raii.hpp"
 
 #include <jni.h>
 
 #include <unistd.h>
+#include <fcntl.h>
+
 #include <string.h> // NOLINT(*-deprecated-headers)
 
 void ZygoteLoaderModule::onLoad(zygisk::Api *_api, JNIEnv *_env) {
@@ -40,16 +43,14 @@ void ZygoteLoaderModule::postServerSpecialize(const zygisk::ServerSpecializeArgs
     callJavaPostSpecialize();
 }
 
-bool testPackage(int module_dir, const char *name) {
-    char path[PATH_MAX] = {0};
-    sprintf(path, "packages/%s", name);
-
-    return faccessat(module_dir, path, F_OK, 0) == 0;
+bool testPackage(int packages_dir, const char *name) {
+    return faccessat(packages_dir, name, F_OK, 0) == 0;
 }
 
 bool shouldEnable(int module_dir, const char *package_name) {
-    return testPackage(module_dir, package_name) ^
-           testPackage(module_dir, ALL_PACKAGES_NAME);
+    RAIIFD packages_dir = openat(module_dir, "packages", O_PATH | O_DIRECTORY);
+    return testPackage(packages_dir, package_name) ^
+           testPackage(packages_dir, ALL_PACKAGES_NAME);
 }
 
 void ZygoteLoaderModule::tryLoadDex(const char *package_name) {
