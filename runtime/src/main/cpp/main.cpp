@@ -52,7 +52,11 @@ bool testPackage(int packages_dir, const char *name) {
 }
 
 bool shouldEnable(int module_dir, const char *package_name) {
-    RAIIFD packages_dir = openat(module_dir, "packages", O_PATH | O_DIRECTORY);
+    int fd = openat(module_dir, "packages", O_PATH | O_DIRECTORY);
+    if (fd == -1) {
+        LOGI("openat returned %i and errno %s for package %s", fd, strerror(errno), package_name);
+    }
+    RAIIFD packages_dir = fd;
     return testPackage(packages_dir, package_name) ^
            testPackage(packages_dir, ALL_PACKAGES_NAME);
 }
