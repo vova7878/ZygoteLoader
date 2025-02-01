@@ -10,7 +10,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <errno.h> // NOLINT(*-deprecated-headers)
 #include <string.h> // NOLINT(*-deprecated-headers)
 
 void ZygoteLoaderModule::onLoad(zygisk::Api *_api, JNIEnv *_env) {
