@@ -12,14 +12,12 @@
 template<bool allow_invalid = false>
 struct RAIIFD {
     RAIIFD(int fd) { // NOLINT(*-explicit-constructor)
-        if (!allow_invalid)fatal_assert(fd >= 0);
+        if (!allow_invalid) fatal_assert(fd >= 0);
         value = fd;
     }
 
     ~RAIIFD() {
-        if (isValid()) {
-            fatal_assert(close(value) >= 0);
-        }
+        if (isValid()) fatal_assert(close(value) >= 0);
     }
 
     bool isValid() const { // NOLINT(*-use-nodiscard)
