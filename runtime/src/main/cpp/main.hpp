@@ -1,6 +1,5 @@
 #pragma once
 
-#include "raii.hpp"
 #include "ext/zygisk.hpp"
 
 class ZygoteLoaderModule : public zygisk::ModuleBase {
