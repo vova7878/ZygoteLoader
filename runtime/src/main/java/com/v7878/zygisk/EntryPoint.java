@@ -2,6 +2,7 @@ package com.v7878.zygisk;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import android.system.Os;
 import android.util.Log;
 
 import com.v7878.r8.annotations.DoNotObfuscate;
@@ -9,7 +10,8 @@ import com.v7878.r8.annotations.DoNotObfuscateType;
 import com.v7878.r8.annotations.DoNotShrink;
 import com.v7878.r8.annotations.DoNotShrinkType;
 
-import java.nio.ByteBuffer;
+import java.io.File;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,18 +23,21 @@ final class EntryPoint {
     private static final String TAG = "ZygoteLoader[Java]";
 
     private static String packageName;
+    private static String moduleDir;
     private static Map<String, String> properties;
     private static Class<?> entrypoint;
 
     @DoNotObfuscate
     @DoNotShrink
-    // TODO: read module.prop on java side
-    private static boolean load(String packageName, ByteBuffer properties) {
+    private static boolean load(String packageName, int moduleDirFD) {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Loading in " + packageName);
         }
         try {
-            return init(packageName, UTF_8.decode(properties).toString());
+            moduleDir = Os.readlink("proc/self/fd/" + moduleDirFD);
+            File props = new File(moduleDir, "module.prop");
+            byte[] propsData = Files.readAllBytes(props.toPath());
+            return init(packageName, new String(propsData, UTF_8));
         } catch (Throwable throwable) {
             Log.e(TAG, "load", throwable);
             return false;
