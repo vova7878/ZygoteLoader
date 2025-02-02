@@ -11,7 +11,6 @@ import com.v7878.zygisk.gradle.util.StringUtils;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.Sync;
-import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.bundling.Zip;
 import org.gradle.api.tasks.bundling.ZipEntryCompression;
 
@@ -103,24 +102,6 @@ public final class ZygoteLoaderDecorator {
                         .orElseThrow()
         ).map(project::zipTree);
 
-        var bundleClassesJar = project.getTasks().register(
-                "bundle" + variantNameCap + "ToClassesJar",
-                Jar.class, jar -> {
-                    jar.getDestinationDirectory().set(
-                            buildDir.dir("intermediates/module_classes_jar/" + variantName)
-                    );
-
-                    jar.getArchiveFileName().set("classes.jar");
-
-                    jar.setIncludeEmptyDirs(false);
-                    jar.setEntryCompression(ZipEntryCompression.STORED);
-                    jar.setPreserveFileTimestamps(false);
-
-                    // classesX.dex
-                    jar.from(apk, sp -> sp.include("classes*.dex"));
-                }
-        );
-
         var mergeMagisk = project.getTasks().register(
                 "mergeMagisk" + variantNameCap,
                 Sync.class, task -> {
@@ -132,8 +113,8 @@ public final class ZygoteLoaderDecorator {
                     // initial packages
                     task.from(generateInitialPackages, sp -> sp.into("packages"));
 
-                    // classes.jar
-                    task.from(bundleClassesJar);
+                    // classes.dex
+                    task.from(apk, sp -> sp.include("classes.dex"));
 
                     // native libraries
                     task.from(apk, sp -> {
