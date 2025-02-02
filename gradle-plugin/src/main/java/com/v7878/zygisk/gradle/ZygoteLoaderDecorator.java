@@ -110,7 +110,7 @@ public final class ZygoteLoaderDecorator {
                             buildDir.dir("intermediates/module_classes_jar/" + variantName)
                     );
 
-                    jar.getArchiveBaseName().set("classes.jar");
+                    jar.getArchiveFileName().set("classes.jar");
 
                     jar.setIncludeEmptyDirs(false);
                     jar.setEntryCompression(ZipEntryCompression.STORED);
