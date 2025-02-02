@@ -48,7 +48,7 @@ public abstract class ChecksumTask extends DefaultTask {
 
             StringBuilder sb = new StringBuilder();
             for (byte b : sha256.digest()) {
-                sb.append(String.format("%02x", ((int) b) & 0xff));
+                sb.append(String.format("%02x", b & 0xff));
             }
             return sb.toString();
         } catch (Exception e) {

@@ -10,15 +10,10 @@ import com.v7878.zygisk.gradle.util.StringUtils;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.file.FileCollection;
-import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Sync;
-import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Zip;
 import org.gradle.api.tasks.bundling.ZipEntryCompression;
 
-import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -40,8 +35,11 @@ public final class ZygoteLoaderDecorator {
 
     public void decorateVariant(ApplicationVariant variant) {
         var extension = variant.getExtension(ZygoteLoaderExtension.class);
+        Objects.requireNonNull(extension, "ZygoteLoaderExtension is null");
 
-        TaskProvider<Task> pack = project.getTasks().named("package" + StringUtils.capitalize(variant.getName()));
+        String variantName = variant.getName();
+        String variantNameCap = StringUtils.capitalize(variantName);
+
         VariantOutput variantOutput = variant.getOutputs().stream().findAny().orElseThrow();
 
         Map<String, String> moduleProps = new LinkedHashMap<>();
@@ -66,51 +64,48 @@ public final class ZygoteLoaderDecorator {
 
         moduleProps.putAll(extension.getAdditionalProperties());
 
-        TaskProvider<PropertiesTask> generateModuleProp = project.getTasks().register(
-                "generateModuleProp" + StringUtils.capitalize(variant.getName()),
+        var buildDir = project.getLayout().getBuildDirectory();
+        var projectDir = project.getLayout().getProjectDirectory();
+
+        var generateModuleProp = project.getTasks().register(
+                "generateModuleProp" + variantNameCap,
                 PropertiesTask.class, task -> {
                     task.getDestinationFile().set(
-                            project.getLayout().getBuildDirectory()
-                                    .dir("generated/properties/" + variant.getName())
+                            buildDir.dir("generated/properties/" + variantName)
                                     .map(p -> p.file("module.prop"))
                     );
                     task.getProperties().set(moduleProps);
                 }
         );
 
-        TaskProvider<PackagesTask> generateInitialPackages = project.getTasks().register(
-                "generateInitialPackages" + StringUtils.capitalize(variant.getName()),
+        var generateInitialPackages = project.getTasks().register(
+                "generateInitialPackages" + variantNameCap,
                 PackagesTask.class, task -> {
                     task.getDestinationDirectory().set(
-                            project.getLayout().getBuildDirectory()
-                                    .dir("generated/packages/" + variant.getName())
+                            buildDir.dir("generated/packages/" + variantName)
                     );
                     task.getPackages().set(extension.getPackages());
                 }
         );
 
-        TaskProvider<Sync> mergeMagisk = project.getTasks().register(
-                "mergeMagisk" + StringUtils.capitalize(variant.getName()),
+        var apk = project.getTasks().named("package" + variantNameCap).map(p ->
+                p.getOutputs().getFiles().getFiles().stream()
+                        .flatMap(f -> {
+                            if (f.isDirectory()) {
+                                return Stream.of(Objects.requireNonNull(f.listFiles()));
+                            } else {
+                                return Stream.of(f);
+                            }
+                        })
+                        .filter(f -> f.getName().endsWith(".apk"))
+                        .findAny()
+                        .orElseThrow()
+        ).map(project::zipTree);
+
+        var mergeMagisk = project.getTasks().register(
+                "mergeMagisk" + variantNameCap,
                 Sync.class, task -> {
-                    task.into(project.getLayout().getBuildDirectory().dir("intermediates/merged_magisk/" + variant.getName()));
-
-                    Provider<File> apkFile = pack.map(p ->
-                            p.getOutputs().getFiles().getFiles().stream()
-                                    .flatMap(f -> {
-                                        if (f.isDirectory()) {
-                                            return Stream.of(Objects.requireNonNull(f.listFiles()));
-                                        } else {
-                                            return Stream.of(f);
-                                        }
-                                    })
-                                    .filter(f -> f.getName().endsWith(".apk"))
-                                    .findAny()
-                                    .orElseThrow()
-                    );
-
-                    Provider<FileCollection> apk = apkFile.map(project::zipTree);
-
-                    task.getInputs().file(apkFile);
+                    task.into(buildDir.dir("intermediates/merged_magisk/" + variantName));
 
                     // module prop
                     task.from(generateModuleProp);
@@ -125,8 +120,13 @@ public final class ZygoteLoaderDecorator {
                     task.from(apk, sp -> {
                         sp.include("lib/*/*.so");
                         sp.eachFile(file -> {
-                            String abi = file.getPath().split("/")[1];
-                            file.setPath("zygisk/" + abi + ".so");
+                            String[] parts = file.getPath().split("/");
+                            String name = parts[2];
+                            // zygisk library is located in special place
+                            if ("libzygisk_loader.so".equals(name)) {
+                                String abi = parts[1];
+                                file.setPath("zygisk/" + abi + ".so");
+                            }
                         });
                     });
 
@@ -137,49 +137,44 @@ public final class ZygoteLoaderDecorator {
                     });
                 }
         );
-        TaskProvider<ChecksumTask> generateChecksum = project.getTasks().register(
-                "generateChecksum" + StringUtils.capitalize(variant.getName()),
+
+        var generateChecksum = project.getTasks().register(
+                "generateChecksum" + variantNameCap,
                 ChecksumTask.class, task -> {
                     task.getDestinationFile().set(
-                            project.getLayout().getBuildDirectory()
-                                    .dir("generated/checksum/" + variant.getName())
+                            buildDir.dir("generated/checksum/" + variantName)
                                     .map(p -> p.file("00-verify-resources.sh"))
                     );
                     task.getRootDirectory().set(mergeMagisk.map(m ->
-                            project.getLayout().getProjectDirectory()
-                                    .dir(m.getDestinationDir().getAbsolutePath()))
+                            projectDir.dir(m.getDestinationDir().getAbsolutePath()))
                     );
                 }
         );
 
-        TaskProvider<CustomizeTask> generateCustomize = project.getTasks().register(
-                "generateCustomize" + StringUtils.capitalize(variant.getName()),
+        var generateCustomize = project.getTasks().register(
+                "generateCustomize" + variantNameCap,
                 CustomizeTask.class, task -> {
                     task.getDestinationFile().set(
-                            project.getLayout().getBuildDirectory()
-                                    .dir("generated/customize/" + variant.getName())
+                            buildDir.dir("generated/customize/" + variantName)
                                     .map(p -> p.file("customize.sh"))
                     );
                     task.getMergedDirectory().set(mergeMagisk.map(m ->
-                            project.getLayout().getProjectDirectory()
-                                    .dir(m.getDestinationDir().getAbsolutePath()))
+                            projectDir.dir(m.getDestinationDir().getAbsolutePath()))
                     );
-                    task.getChecksumFileName().set(generateChecksum.map(c -> c.getDestinationFile().get().getAsFile().getName()));
+                    task.getChecksumFileName().set(generateChecksum.map(c ->
+                            c.getDestinationFile().get().getAsFile().getName()));
                 }
         );
 
-        TaskProvider<Zip> zipMagisk = project.getTasks().register(
-                "zipMagisk" + StringUtils.capitalize(variant.getName()),
+        var zipMagisk = project.getTasks().register(
+                "zipMagisk" + variantNameCap,
                 Zip.class, zip -> {
                     zip.getDestinationDirectory().set(
-                            project.getLayout().getBuildDirectory()
-                                    .dir("outputs/magisk/" + variant.getFlavorName() + "/" + variant.getBuildType())
+                            buildDir.dir("outputs/magisk/" + variant.getFlavorName() + "/" + variant.getBuildType())
                     );
 
-                    zip.getArchiveBaseName().set(project.getName());
-                    if (extension.getArchiveName() != null) {
-                        zip.getArchiveBaseName().set(extension.getArchiveName());
-                    }
+                    zip.getArchiveBaseName().set(extension.getArchiveName() != null ?
+                            extension.getArchiveName() : project.getName());
 
                     zip.setIncludeEmptyDirs(false);
                     zip.setEntryCompression(ZipEntryCompression.DEFLATED);
@@ -192,7 +187,7 @@ public final class ZygoteLoaderDecorator {
         );
 
         project.getTasks().named(
-                "assemble" + StringUtils.capitalize(variant.getName()),
+                "assemble" + variantNameCap,
                 t -> t.dependsOn(zipMagisk)
         );
     }
