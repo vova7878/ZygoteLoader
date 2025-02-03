@@ -1,6 +1,7 @@
 package com.v7878.zygisk;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardOpenOption.READ;
 
 import android.system.Os;
 import android.util.Log;
@@ -10,8 +11,11 @@ import com.v7878.r8.annotations.DoNotObfuscateType;
 import com.v7878.r8.annotations.DoNotShrink;
 import com.v7878.r8.annotations.DoNotShrinkType;
 
-import java.io.File;
-import java.nio.file.Files;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +31,19 @@ final class EntryPoint {
     private static Map<String, String> properties;
     private static Class<?> entrypoint;
 
+    private static Path toPath(String first, String... more) {
+        return FileSystems.getDefault().getPath(first, more);
+    }
+
+    private static byte[] readFile(String first, String... more) throws IOException {
+        var path = toPath(first, more);
+        try (FileChannel channel = FileChannel.open(path, READ)) {
+            byte[] out = new byte[Math.toIntExact(channel.size())];
+            channel.read(ByteBuffer.wrap(out));
+            return out;
+        }
+    }
+
     @DoNotObfuscate
     @DoNotShrink
     private static boolean load(String packageName, int moduleDirFD) {
@@ -35,9 +52,8 @@ final class EntryPoint {
         }
         try {
             moduleDir = Os.readlink("proc/self/fd/" + moduleDirFD);
-            File props = new File(moduleDir, "module.prop");
-            byte[] propsData = Files.readAllBytes(props.toPath());
-            return init(packageName, new String(propsData, UTF_8));
+            byte[] props = readFile(moduleDir, "module.prop");
+            return init(packageName, new String(props, UTF_8));
         } catch (Throwable throwable) {
             Log.e(TAG, "load", throwable);
             return false;
