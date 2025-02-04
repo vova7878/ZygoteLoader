@@ -31,4 +31,9 @@ public final class ZygoteLoader {
     public static Map<String, String> getProperties() {
         return EntryPoint.getProperties();
     }
+
+    // TODO: javadoc
+    public static String getModuleDir() {
+        return EntryPoint.getModuleDir();
+    }
 }

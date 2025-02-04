@@ -2,6 +2,7 @@ package com.v7878.zygisk;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import android.system.Os;
 import android.util.Log;
 
 import com.v7878.r8.annotations.DoNotObfuscate;
@@ -21,6 +22,7 @@ final class EntryPoint {
     private static final String TAG = "ZygoteLoader[Java]";
 
     private static String packageName;
+    private static String moduleDir;
     private static Map<String, String> properties;
     private static Class<?> entrypoint;
 
@@ -31,6 +33,7 @@ final class EntryPoint {
             Log.d(TAG, "Loading in " + packageName);
         }
         try {
+            moduleDir = Os.readlink("proc/self/fd/" + moduleDirFD);
             return init(packageName, UTF_8.decode(props).toString());
         } catch (Throwable throwable) {
             Log.e(TAG, "load", throwable);
@@ -85,6 +88,10 @@ final class EntryPoint {
         } catch (ReflectiveOperationException e) {
             Log.e(TAG, "Invoke main of " + entrypoint, e);
         }
+    }
+
+    public static String getModuleDir() {
+        return moduleDir;
     }
 
     public static String getPackageName() {
