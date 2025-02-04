@@ -64,13 +64,11 @@ void ZygoteLoaderModule::tryLoadDex(int module_dir, const char *package_name) {
     LOGD("Loading in %s", package_name);
 
     RAIIFile dex(module_dir, "classes.dex");
-    RAIIFile props(module_dir, "module.prop");
 
     entrypoint = (jclass) env->NewGlobalRef(
             dex_load_and_init(
                     env, package_name, module_dir,
-                    dex.data, dex.length,
-                    props.data, props.length
+                    dex.data, dex.length
             )
     );
 }

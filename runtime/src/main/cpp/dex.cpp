@@ -7,8 +7,7 @@
 #define new_string(var_name, text) jstring var_name = env->NewStringUTF(text); fatal_assert((var_name) != nullptr)
 
 jclass dex_load_and_init(JNIEnv *env, const char *package_name, int module_dir,
-                         const void *dex_block, uint32_t dex_length,
-                         const void *props_block, uint32_t props_length) {
+                         const void *dex_block, uint32_t dex_length) {
 
     find_class(c_class_loader, "java/lang/ClassLoader");
     find_static_method(
@@ -44,11 +43,10 @@ jclass dex_load_and_init(JNIEnv *env, const char *package_name, int module_dir,
     );
     fatal_assert(c_entrypoint != nullptr);
 
-    find_static_method(m_load, c_entrypoint, "load", "(Ljava/lang/String;ILjava/nio/ByteBuffer;)Z");
+    find_static_method(m_load, c_entrypoint, "load", "(Ljava/lang/String;I)Z");
     new_string(s_package_name, package_name);
     bool success = env->CallStaticBooleanMethod(
-            c_entrypoint, m_load, s_package_name, module_dir,
-            env->NewDirectByteBuffer((void *) props_block, props_length)
+            c_entrypoint, m_load, s_package_name, module_dir
     );
 
     return success ? c_entrypoint : nullptr;

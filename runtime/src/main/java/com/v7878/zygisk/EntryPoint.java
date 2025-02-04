@@ -9,7 +9,8 @@ import com.v7878.r8.annotations.DoNotObfuscateType;
 import com.v7878.r8.annotations.DoNotShrink;
 import com.v7878.r8.annotations.DoNotShrinkType;
 
-import java.nio.ByteBuffer;
+import java.io.File;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,13 +28,15 @@ final class EntryPoint {
 
     @DoNotObfuscate
     @DoNotShrink
-    private static boolean load(String packageName, int moduleDirFD, ByteBuffer props) {
+    private static boolean load(String packageName, int moduleDirFD) {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Loading in " + packageName);
         }
-        moduleDir = "proc/self/fd/" + moduleDirFD;
+        moduleDir = "/proc/self/fd/" + moduleDirFD;
         try {
-            return init(packageName, UTF_8.decode(props).toString());
+            File props = new File(moduleDir, "module.prop");
+            byte[] propsData = Files.readAllBytes(props.toPath());
+            return init(packageName, new String(propsData, UTF_8));
         } catch (Throwable throwable) {
             Log.e(TAG, "load", throwable);
             return false;
