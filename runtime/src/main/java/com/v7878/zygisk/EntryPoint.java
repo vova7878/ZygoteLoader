@@ -2,7 +2,6 @@ package com.v7878.zygisk;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import android.system.Os;
 import android.util.Log;
 
 import com.v7878.r8.annotations.DoNotObfuscate;
@@ -32,8 +31,8 @@ final class EntryPoint {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Loading in " + packageName);
         }
+        moduleDir = "proc/self/fd/" + moduleDirFD;
         try {
-            moduleDir = Os.readlink("proc/self/fd/" + moduleDirFD);
             return init(packageName, UTF_8.decode(props).toString());
         } catch (Throwable throwable) {
             Log.e(TAG, "load", throwable);
@@ -78,6 +77,7 @@ final class EntryPoint {
         } catch (ReflectiveOperationException e) {
             Log.e(TAG, "Invoke premain of " + entrypoint, e);
         }
+        moduleDir = null;
     }
 
     @DoNotObfuscate
