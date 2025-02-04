@@ -1,9 +1,7 @@
 package com.v7878.zygisk;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.StandardOpenOption.READ;
 
-import android.system.Os;
 import android.util.Log;
 
 import com.v7878.r8.annotations.DoNotObfuscate;
@@ -11,11 +9,7 @@ import com.v7878.r8.annotations.DoNotObfuscateType;
 import com.v7878.r8.annotations.DoNotShrink;
 import com.v7878.r8.annotations.DoNotShrinkType;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,43 +21,27 @@ final class EntryPoint {
     private static final String TAG = "ZygoteLoader[Java]";
 
     private static String packageName;
-    private static String moduleDir;
     private static Map<String, String> properties;
     private static Class<?> entrypoint;
 
-    private static Path toPath(String first, String... more) {
-        return FileSystems.getDefault().getPath(first, more);
-    }
-
-    private static byte[] readFile(String first, String... more) throws IOException {
-        var path = toPath(first, more);
-        try (FileChannel channel = FileChannel.open(path, READ)) {
-            byte[] out = new byte[Math.toIntExact(channel.size())];
-            channel.read(ByteBuffer.wrap(out));
-            return out;
-        }
-    }
-
     @DoNotObfuscate
     @DoNotShrink
-    private static boolean load(String packageName, int moduleDirFD) {
+    private static boolean load(String packageName, int moduleDirFD, ByteBuffer props) {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Loading in " + packageName);
         }
         try {
-            moduleDir = Os.readlink("proc/self/fd/" + moduleDirFD);
-            byte[] props = readFile(moduleDir, "module.prop");
-            return init(packageName, new String(props, UTF_8));
+            return init(packageName, UTF_8.decode(props).toString());
         } catch (Throwable throwable) {
             Log.e(TAG, "load", throwable);
             return false;
         }
     }
 
-    private static boolean init(String packageName, String propertiesText) {
+    private static boolean init(String packageName, String props) {
         Map<String, String> properties = new HashMap<>();
 
-        for (String line : propertiesText.split("\n")) {
+        for (String line : props.split("\n")) {
             String[] kv = line.split("=", 2);
             if (kv.length != 2)
                 continue;
