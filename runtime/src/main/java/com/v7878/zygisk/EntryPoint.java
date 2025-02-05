@@ -11,9 +11,9 @@ import com.v7878.r8.annotations.DoNotShrinkType;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+
+import dalvik.system.BaseDexClassLoader;
 
 @SuppressWarnings("unused")
 @DoNotObfuscateType
@@ -43,19 +43,15 @@ final class EntryPoint {
         }
     }
 
-    private static boolean init(String packageName, String props) {
-        Map<String, String> properties = new HashMap<>();
-
-        for (String line : props.split("\n")) {
-            String[] kv = line.split("=", 2);
-            if (kv.length != 2)
-                continue;
-
-            properties.put(kv[0].trim(), kv[1].trim());
-        }
-
+    private static boolean init(String packageName, String props) throws Throwable {
         EntryPoint.packageName = packageName;
-        EntryPoint.properties = Collections.unmodifiableMap(properties);
+        EntryPoint.properties = Utils.toMap(props);
+
+        File libFolder = new File(moduleDir, "lib");
+        if (libFolder.isDirectory()) {
+            Utils.addNativePath((BaseDexClassLoader) EntryPoint.class.getClassLoader(),
+                    new File(libFolder, Utils.getNativeLibraryFolderName()));
+        }
 
         String entrypointName = properties.get("entrypoint");
         if (entrypointName == null) {
