@@ -24,7 +24,8 @@ void ZygoteLoaderModule::preAppSpecialize(zygisk::AppSpecializeArgs *args) {
     char *package_name;
     process_get_package_name(env, args->nice_name, &package_name);
 
-    tryLoadDex(package_name);
+    RAIIFD module_dir = api->getModuleDir(); // keep alive during preSpecialize
+    tryLoadDex(module_dir, package_name);
     callJavaPreSpecialize();
 
     free(package_name);
@@ -35,7 +36,8 @@ void ZygoteLoaderModule::postAppSpecialize(const zygisk::AppSpecializeArgs *args
 }
 
 void ZygoteLoaderModule::preServerSpecialize(zygisk::ServerSpecializeArgs *args) {
-    tryLoadDex(PACKAGE_NAME_SYSTEM_SERVER);
+    RAIIFD module_dir = api->getModuleDir(); // keep alive during preSpecialize
+    tryLoadDex(module_dir, PACKAGE_NAME_SYSTEM_SERVER);
     callJavaPreSpecialize();
 }
 
@@ -54,9 +56,7 @@ bool shouldEnable(int module_dir, const char *package_name) {
            testPackage(packages_dir, ALL_PACKAGES_NAME);
 }
 
-void ZygoteLoaderModule::tryLoadDex(const char *package_name) {
-    RAIIFD module_dir = api->getModuleDir();
-
+void ZygoteLoaderModule::tryLoadDex(int module_dir, const char *package_name) {
     if (!shouldEnable(module_dir, package_name)) {
         return;
     }
@@ -64,13 +64,13 @@ void ZygoteLoaderModule::tryLoadDex(const char *package_name) {
     LOGD("Loading in %s", package_name);
 
     RAIIFile dex(module_dir, "classes.dex");
-    RAIIFile props(module_dir, "module.prop");
 
-    entrypoint = (jclass) env->NewGlobalRef(dex_load_and_init(
-            env, package_name,
-            dex.data, dex.length,
-            props.data, props.length
-    ));
+    entrypoint = (jclass) env->NewGlobalRef(
+            dex_load_and_init(
+                    env, package_name, module_dir,
+                    dex.data, dex.length
+            )
+    );
 }
 
 void ZygoteLoaderModule::callJavaPreSpecialize() {

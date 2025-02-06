@@ -9,10 +9,11 @@ import com.v7878.r8.annotations.DoNotObfuscateType;
 import com.v7878.r8.annotations.DoNotShrink;
 import com.v7878.r8.annotations.DoNotShrinkType;
 
-import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.HashMap;
+import java.io.File;
+import java.nio.file.Files;
 import java.util.Map;
+
+import dalvik.system.BaseDexClassLoader;
 
 @SuppressWarnings("unused")
 @DoNotObfuscateType
@@ -21,37 +22,36 @@ final class EntryPoint {
     private static final String TAG = "ZygoteLoader[Java]";
 
     private static String packageName;
+    private static String moduleDir;
     private static Map<String, String> properties;
     private static Class<?> entrypoint;
 
     @DoNotObfuscate
     @DoNotShrink
-    // TODO: read module.prop on java side
-    private static boolean load(String packageName, ByteBuffer properties) {
+    private static boolean load(String packageName, int moduleDirFD) {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Loading in " + packageName);
         }
+        moduleDir = "/proc/self/fd/" + moduleDirFD;
         try {
-            return init(packageName, UTF_8.decode(properties).toString());
+            File props = new File(moduleDir, "module.prop");
+            byte[] propsData = Files.readAllBytes(props.toPath());
+            return init(packageName, new String(propsData, UTF_8));
         } catch (Throwable throwable) {
             Log.e(TAG, "load", throwable);
             return false;
         }
     }
 
-    private static boolean init(String packageName, String propertiesText) {
-        Map<String, String> properties = new HashMap<>();
-
-        for (String line : propertiesText.split("\n")) {
-            String[] kv = line.split("=", 2);
-            if (kv.length != 2)
-                continue;
-
-            properties.put(kv[0].trim(), kv[1].trim());
-        }
-
+    private static boolean init(String packageName, String props) throws Throwable {
         EntryPoint.packageName = packageName;
-        EntryPoint.properties = Collections.unmodifiableMap(properties);
+        EntryPoint.properties = Utils.toMap(props);
+
+        File libFolder = new File(moduleDir, "lib");
+        if (libFolder.isDirectory()) {
+            Utils.addNativePath((BaseDexClassLoader) EntryPoint.class.getClassLoader(),
+                    new File(libFolder, Utils.getNativeLibraryFolderName()));
+        }
 
         String entrypointName = properties.get("entrypoint");
         if (entrypointName == null) {
@@ -76,6 +76,7 @@ final class EntryPoint {
         } catch (ReflectiveOperationException e) {
             Log.e(TAG, "Invoke premain of " + entrypoint, e);
         }
+        moduleDir = null;
     }
 
     @DoNotObfuscate
@@ -86,6 +87,10 @@ final class EntryPoint {
         } catch (ReflectiveOperationException e) {
             Log.e(TAG, "Invoke main of " + entrypoint, e);
         }
+    }
+
+    public static String getModuleDir() {
+        return moduleDir;
     }
 
     public static String getPackageName() {
