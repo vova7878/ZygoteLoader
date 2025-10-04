@@ -10,6 +10,11 @@ fi
 if [ "$ARCH" = "arm64" ]; then
   ui_print "- Placing arm64 libraries"
 
+  if [ "$HAS32BIT" = "false" ]; then
+    rm -rf "$MODPATH/zygisk/armeabi-v7a.so"
+    rm -rf "$MODPATH/lib/armeabi-v7a"
+  fi
+
   rm -rf "$MODPATH/zygisk/x86.so" "$MODPATH/zygisk/x86_64.so"
   rm -rf "$MODPATH/lib/x86" "$MODPATH/lib/x86_64"
 fi
@@ -23,6 +28,11 @@ fi
 
 if [ "$ARCH" = "x64" ]; then
   ui_print "- Placing x86_64 libraries"
+
+  if [ "$HAS32BIT" = "false" ]; then
+    rm -rf "$MODPATH/zygisk/x86.so"
+    rm -rf "$MODPATH/lib/x86"
+  fi
 
   rm -rf "$MODPATH/zygisk/armeabi-v7a.so" "$MODPATH/zygisk/arm64-v8a.so"
   rm -rf "$MODPATH/lib/armeabi-v7a" "$MODPATH/lib/arm64-v8a"
