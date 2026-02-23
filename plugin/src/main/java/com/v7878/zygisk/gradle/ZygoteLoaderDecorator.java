@@ -183,8 +183,14 @@ public final class ZygoteLoaderDecorator {
                             buildDir.dir("outputs/magisk/" + variant.getFlavorName() + "/" + variant.getBuildType())
                     );
 
-                    zip.getArchiveBaseName().set(extension.getArchiveName() != null ?
-                            extension.getArchiveName() : project.getName());
+                    String name = extension.getArchiveName() != null
+                            ? extension.getArchiveName()
+                            : project.getName();
+                    if (extension.isAddVariantToArchiveName()) {
+                        name += "-" + variantName;
+                    }
+
+                    zip.getArchiveBaseName().set(name);
 
                     zip.setIncludeEmptyDirs(false);
                     zip.setEntryCompression(ZipEntryCompression.DEFLATED);

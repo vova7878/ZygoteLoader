@@ -46,6 +46,7 @@ public class ZygoteLoaderExtension implements VariantExtension {
     private String updateJson;
     private Boolean attachNativeLibs;
     private Boolean generateChecksums;
+    private Boolean addVariantToArchiveName;
 
     @Nullable
     public String getId() {
@@ -126,6 +127,14 @@ public class ZygoteLoaderExtension implements VariantExtension {
         this.generateChecksums = generateChecksums;
     }
 
+    public boolean isAddVariantToArchiveName() {
+        return addVariantToArchiveName == true;
+    }
+
+    public void setAddVariantToArchiveName(boolean addVariantToArchiveName) {
+        this.addVariantToArchiveName = addVariantToArchiveName;
+    }
+
     private static ZygoteLoaderExtension merge(ZygoteLoaderExtension a,
                                                ZygoteLoaderExtension b) {
         var out = new ZygoteLoaderExtension();
@@ -142,6 +151,7 @@ public class ZygoteLoaderExtension implements VariantExtension {
         out.updateJson = b.updateJson == null ? a.updateJson : b.updateJson;
         out.attachNativeLibs = b.attachNativeLibs == null ? a.attachNativeLibs : b.attachNativeLibs;
         out.generateChecksums = b.generateChecksums == null ? a.generateChecksums : b.generateChecksums;
+        out.addVariantToArchiveName = b.addVariantToArchiveName == null ? a.addVariantToArchiveName : b.addVariantToArchiveName;
         return out;
     }
 
