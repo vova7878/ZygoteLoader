@@ -111,6 +111,7 @@ public class ZygoteLoaderExtension implements VariantExtension {
         this.updateJson = updateJson;
     }
 
+    @Nullable
     public Boolean getAttachNativeLibs() {
         return attachNativeLibs;
     }
