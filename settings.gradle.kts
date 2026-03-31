@@ -2,18 +2,16 @@ rootProject.name = "ZygoteLoader"
 
 pluginManagement {
     repositories {
-        mavenCentral()
         google()
+        mavenCentral()
         gradlePluginPortal()
     }
 }
 
 dependencyResolutionManagement {
-    @Suppress("UnstableApiUsage")
     repositories {
-        mavenCentral()
         google()
-        maven { url = uri("https://jitpack.io") }
+        mavenCentral()
     }
 }
 
