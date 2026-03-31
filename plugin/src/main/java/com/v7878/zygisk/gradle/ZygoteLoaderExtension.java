@@ -128,7 +128,7 @@ public class ZygoteLoaderExtension implements VariantExtension {
     }
 
     public boolean isAddVariantToArchiveName() {
-        return addVariantToArchiveName == true;
+        return addVariantToArchiveName != null && addVariantToArchiveName;
     }
 
     public void setAddVariantToArchiveName(boolean addVariantToArchiveName) {
