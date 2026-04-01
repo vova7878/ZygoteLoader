@@ -18,7 +18,7 @@ public class ZygoteLoaderPlugin implements Plugin<Project> {
 
         target.getDependencies().add("implementation", BuildConfig.RUNTIME_DEPENDENCY);
 
-        ZygoteLoaderExtension projectExtension = target.getExtensions()
+        var projectExtension = target.getExtensions()
                 .create("zygisk", ZygoteLoaderExtension.class);
 
         target.getExtensions().configure(ApplicationAndroidComponentsExtension.class, components -> {
@@ -37,6 +37,7 @@ public class ZygoteLoaderPlugin implements Plugin<Project> {
 
             ZygoteLoaderDecorator decorator = new ZygoteLoaderDecorator(target);
             components.onVariants(components.selector().all(), variant -> {
+                decorator.initExtension(variant);
                 target.afterEvaluate(unused -> decorator.decorateVariant(variant));
             });
         });

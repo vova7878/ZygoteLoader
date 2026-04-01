@@ -6,7 +6,7 @@ import org.gradle.api.file.FileVisitor;
 import java.util.function.Consumer;
 
 public final class Utils {
-    public static String capitalize2(String in) {
+    public static String capitalize(String in) {
         if (in.isEmpty()) {
             return "";
         }
@@ -17,7 +17,7 @@ public final class Utils {
     public static String computeTaskName(String first, String... parts) {
         StringBuilder b = new StringBuilder(first);
         for (String part : parts) {
-            b.append(capitalize2(part));
+            b.append(capitalize(part));
         }
         return b.toString();
     }

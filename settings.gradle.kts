@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 
 include(":runtime")
 include(":plugin")
+include(":stub")

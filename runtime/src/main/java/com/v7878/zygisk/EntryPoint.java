@@ -25,7 +25,6 @@ final class EntryPoint {
     private static String processName;
     private static String moduleDir;
     private static Map<String, String> properties;
-    private static Class<?> entrypoint;
 
     @DoNotObfuscate
     @DoNotShrink
@@ -71,12 +70,6 @@ final class EntryPoint {
             return false;
         }
 
-        try {
-            entrypoint = Class.forName(entrypointName);
-        } catch (ClassNotFoundException e) {
-            Log.e(TAG, "Trying to find class " + entrypointName, e);
-            return false;
-        }
         return true;
     }
 
@@ -84,9 +77,9 @@ final class EntryPoint {
     @DoNotShrink
     private static void preSpecialize() {
         try {
-            entrypoint.getMethod("premain").invoke(null);
+            Bindings.premain();
         } catch (Throwable th) {
-            Log.e(TAG, "Invoke premain of " + entrypoint, th);
+            Log.e(TAG, "Invoke premain", th);
         }
         moduleDir = null;
     }
@@ -95,9 +88,9 @@ final class EntryPoint {
     @DoNotShrink
     private static void postSpecialize() {
         try {
-            entrypoint.getMethod("main").invoke(null);
+            Bindings.main();
         } catch (Throwable th) {
-            Log.e(TAG, "Invoke main of " + entrypoint, th);
+            Log.e(TAG, "Invoke main", th);
         }
     }
 

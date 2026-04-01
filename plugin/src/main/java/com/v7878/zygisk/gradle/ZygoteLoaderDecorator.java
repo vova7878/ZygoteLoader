@@ -3,7 +3,7 @@ package com.v7878.zygisk.gradle;
 import static com.v7878.zygisk.gradle.Utils.computeTaskName;
 
 import com.android.build.api.variant.ApplicationVariant;
-import com.android.build.api.variant.VariantOutput;
+import com.v7878.zygisk.gradle.tasks.BindingsTask;
 import com.v7878.zygisk.gradle.tasks.ChecksumTask;
 import com.v7878.zygisk.gradle.tasks.CustomizeTask;
 import com.v7878.zygisk.gradle.tasks.PackagesTask;
@@ -25,9 +25,33 @@ public final class ZygoteLoaderDecorator {
     private static final String ZYGISK_LIB_NAME = "libzygisk_loader.so";
 
     private final Project project;
+    private ZygoteLoaderExtension extension;
 
     public ZygoteLoaderDecorator(Project project) {
         this.project = project;
+    }
+
+    public void initExtension(ApplicationVariant variant) {
+        extension = variant.getExtension(ZygoteLoaderExtension.class);
+
+        var variantName = variant.getName();
+        var buildDir = project.getLayout().getBuildDirectory();
+
+        var generateBindings = project.getTasks().register(
+                computeTaskName("generateBindings", variantName),
+                BindingsTask.class, task -> {
+                    task.getDestinationDirectory().set(
+                            buildDir.dir("generated/dynamic/" + variantName)
+                    );
+                    task.getEntrypoint().set(extension.getEntrypoint());
+                }
+        );
+
+        var java = variant.getSources().getJava();
+        assert java != null;
+        java.addGeneratedSourceDirectory(
+                generateBindings, BindingsTask::getDestinationDirectory
+        );
     }
 
     private static void putProperty(Map<String, String> props, String name, boolean required, String value) {
@@ -36,12 +60,10 @@ public final class ZygoteLoaderDecorator {
     }
 
     public void decorateVariant(ApplicationVariant variant) {
-        var extension = variant.getExtension(ZygoteLoaderExtension.class);
         Objects.requireNonNull(extension, "ZygoteLoaderExtension is null");
 
-        String variantName = variant.getName();
-
-        VariantOutput variantOutput = variant.getOutputs().stream().findAny().orElseThrow();
+        var variantName = variant.getName();
+        var variantOutput = variant.getOutputs().getFirst();
 
         var buildDir = project.getLayout().getBuildDirectory();
 
@@ -86,13 +108,10 @@ public final class ZygoteLoaderDecorator {
             putProperty(props, "name", true, extension.getName());
             putProperty(props, "author", true, extension.getAuthor());
             putProperty(props, "description", true, extension.getDescription());
-            putProperty(props, "entrypoint", true, extension.getEntrypoint());
             putProperty(props, "updateJson", false, extension.getUpdateJson());
             Boolean libs = extension.getAttachNativeLibs();
-            if (libs == null) {
-                libs = value;
-            }
-            putProperty(props, "attachNativeLibs", false, Boolean.toString(libs));
+            if (libs == null) libs = value;
+            putProperty(props, "attachNativeLibs", true, Boolean.toString(libs));
 
             props.putAll(extension.getAdditionalProperties());
             return props;

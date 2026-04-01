@@ -44,14 +44,13 @@ val generator = tasks.register("generateDynamicSources") {
 
         buildConfig.parentFile.mkdirs()
 
-        val runtimeProject = project(":runtime")
         buildConfig.writeText(
             """
             package com.v7878.zygisk.gradle;
             
             public final class BuildConfig {
                 public static final String RUNTIME_DEPENDENCY =
-                 "io.github.vova7878.ZygoteLoader:runtime:${runtimeProject.version}";
+                 "io.github.vova7878.ZygoteLoader:runtime:${project.version}";
             }
             """.trimIndent()
         )

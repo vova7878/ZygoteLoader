@@ -12,3 +12,4 @@ r8-annotations = { module = "io.github.vova7878:R8Annotations", version.ref = "r
 android-library = { id = "com.android.library", version.ref = "agp" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
 java-gradle-plugin = { id = 'java-gradle-plugin' }
+java-library = { id = 'java-library' }

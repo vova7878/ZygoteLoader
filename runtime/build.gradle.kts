@@ -45,6 +45,8 @@ android {
 }
 
 dependencies {
+    compileOnly(project(":stub"))
+
     implementation(libs.r8.annotations)
 }
 
