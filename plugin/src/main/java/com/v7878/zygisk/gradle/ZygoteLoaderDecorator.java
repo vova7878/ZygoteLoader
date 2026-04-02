@@ -2,6 +2,7 @@ package com.v7878.zygisk.gradle;
 
 import static com.v7878.zygisk.gradle.Utils.computeTaskName;
 
+import com.android.build.api.artifact.SingleArtifact;
 import com.android.build.api.variant.ApplicationVariant;
 import com.v7878.zygisk.gradle.tasks.BindingsTask;
 import com.v7878.zygisk.gradle.tasks.ChecksumTask;
@@ -77,11 +78,11 @@ public final class ZygoteLoaderDecorator {
                 }
         );
 
-        var apk = project.getTasks().named(computeTaskName("package", variantName))
-                .map(p -> p.getOutputs().getFiles().getAsFileTree()
-                        .matching(f -> f.include("**/*.apk"))
-                        .getSingleFile()
-                ).map(project::zipTree);
+        var apk_dir = variant.getArtifacts().get(SingleArtifact.APK.INSTANCE);
+        var apk = apk_dir.map(p -> p.getAsFileTree()
+                .matching(f -> f.include("*.apk"))
+                .getSingleFile()
+        ).map(project::zipTree);
 
         var hasNativeLibs = apk.map(files -> files
                 .matching(f -> f.include("lib/*/*.so"))

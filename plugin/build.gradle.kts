@@ -50,7 +50,7 @@ val generator = tasks.register("generateDynamicSources") {
             
             public final class BuildConfig {
                 public static final String RUNTIME_DEPENDENCY =
-                 "io.github.vova7878.ZygoteLoader:runtime:${project.version}";
+                 "io.github.vova7878.ZygoteLoader:runtime:${rootProject.version}";
             }
             """.trimIndent()
         )
