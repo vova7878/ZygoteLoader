@@ -119,9 +119,13 @@ void ZygoteLoaderModule::tryLoadDex(
         return strncmp(name, "classes", 7) == 0 && strstr(name, ".dex") != nullptr;
     });
 
+    RAIIFile entrypoint_file(module_dir, "entrypoint");
+    // The file may not end with \0
+    RAIIStr entrypoint_name = strndup((char *) entrypoint_file.data, entrypoint_file.length);
+
     entrypoint = (jclass) env->NewGlobalRef(
             dex_load_and_init(
-                    env, module_dir,
+                    env, module_dir, entrypoint_name,
                     package_name, process_name,
                     &files, count
             )

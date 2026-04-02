@@ -5,7 +5,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import android.util.Log;
 
 import com.v7878.r8.annotations.DoNotObfuscate;
-import com.v7878.r8.annotations.DoNotObfuscateType;
 import com.v7878.r8.annotations.DoNotShrink;
 import com.v7878.r8.annotations.DoNotShrinkType;
 
@@ -16,7 +15,6 @@ import java.util.Map;
 import dalvik.system.BaseDexClassLoader;
 
 @SuppressWarnings("unused")
-@DoNotObfuscateType
 @DoNotShrinkType
 final class EntryPoint {
     private static final String TAG = "ZygoteLoader[Java]";
@@ -62,12 +60,6 @@ final class EntryPoint {
                             new File(libFolder, Utils.getNativeLibraryFolderName()));
                 }
             }
-        }
-
-        String entrypointName = properties.get("entrypoint");
-        if (entrypointName == null) {
-            Log.e(TAG, "Entrypoint not found");
-            return false;
         }
 
         return true;

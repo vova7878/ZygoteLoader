@@ -7,6 +7,7 @@ import com.android.build.api.variant.ApplicationVariant;
 import com.v7878.zygisk.gradle.tasks.BindingsTask;
 import com.v7878.zygisk.gradle.tasks.ChecksumTask;
 import com.v7878.zygisk.gradle.tasks.CustomizeTask;
+import com.v7878.zygisk.gradle.tasks.EntryPointTask;
 import com.v7878.zygisk.gradle.tasks.PackagesTask;
 import com.v7878.zygisk.gradle.tasks.PropertiesTask;
 
@@ -129,10 +130,26 @@ public final class ZygoteLoaderDecorator {
                 }
         );
 
+        var mappings = variant.getArtifacts().get(
+                SingleArtifact.OBFUSCATION_MAPPING_FILE.INSTANCE);
+        var generateEntryPoint = project.getTasks().register(
+                computeTaskName("generateEntryPoint", variantName),
+                EntryPointTask.class, task -> {
+                    task.getDestinationFile().set(
+                            buildDir.dir("generated/entrypoint/" + variantName)
+                                    .map(p -> p.file("entrypoint"))
+                    );
+                    task.getMappings().set(mappings);
+                }
+        );
+
         var mergeMagisk = project.getTasks().register(
                 computeTaskName("mergeMagisk", variantName),
                 Sync.class, task -> {
                     task.into(buildDir.dir("intermediates/merged_magisk/" + variantName));
+
+                    // module entrypoint
+                    task.from(generateEntryPoint);
 
                     // module prop
                     task.from(generateModuleProp);

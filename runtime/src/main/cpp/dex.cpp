@@ -10,7 +10,7 @@ char *get_string_data(JNIEnv *env, jstring value) {
     return out;
 }
 
-jclass dex_load_and_init(JNIEnv *env, int module_dir,
+jclass dex_load_and_init(JNIEnv *env, int module_dir, const char *entrypoint_name,
                          const char *package_name, const char *process_name,
                          RAIILink<RAIIFile> *files, jsize dex_count) {
 
@@ -72,7 +72,7 @@ jclass dex_load_and_init(JNIEnv *env, int module_dir,
     );
     fatal_assert(m_load_class != nullptr);
 
-    jstring s_entrypoint_name = env->NewStringUTF("com.v7878.zygisk.EntryPoint");
+    jstring s_entrypoint_name = env->NewStringUTF(entrypoint_name);
     fatal_assert(s_entrypoint_name != nullptr);
 
     auto c_entrypoint = (jclass) env->CallObjectMethod(

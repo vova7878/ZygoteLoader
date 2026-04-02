@@ -35,8 +35,8 @@ public class ZygoteLoaderPlugin implements Plugin<Project> {
                     )
             );
 
-            ZygoteLoaderDecorator decorator = new ZygoteLoaderDecorator(target);
             components.onVariants(components.selector().all(), variant -> {
+                var decorator = new ZygoteLoaderDecorator(target);
                 decorator.initExtension(variant);
                 target.afterEvaluate(unused -> decorator.decorateVariant(variant));
             });
